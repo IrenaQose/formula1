@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: f1
+    environment:
+      POSTGRES_USER: f1
+      POSTGRES_PASSWORD: f1
+      POSTGRES_DB: f1
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/Users/1000059834/Documents/formula1_docker/data
+
+volumes:
+  pgdata:

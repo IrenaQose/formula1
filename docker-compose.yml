@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: f1-db
+    environment:
+      POSTGRES_USER: 
+      POSTGRES_PASSWORD: 
+      POSTGRES_DB: 
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U f1 -d f1 -c 'SELECT 1' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./formula1_service
+      dockerfile: Dockerfile
+    container_name: f1-service
+    environment:
+      - NODE_ENV=development 
+      - PORT=3000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME= 
+      - DB_PASSWORD=
+      - DB_DATABASE=
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+       - backend_node_modules:/app/node_modules  
+
+  frontend:
+    build:
+      context: ./formula1_frontend
+      dockerfile: Dockerfile
+    container_name: f1-frontend
+    environment:
+      - VITE_API_BASE_URL=http://backend:3000/
+    ports:
+      - "5173:8080"
+    depends_on:
+      - backend
+    volumes:
+      - frontend_node_modules:/app/node_modules 
+
+volumes:
+  pgdata: 
+  backend_node_modules:
+  frontend_node_modules:

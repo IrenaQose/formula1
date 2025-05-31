@@ -1,0 +1,14 @@
+.idea
+.vscode
+.DS_Store
+
+formula1_service/.env
+formula1_frontend/.env
+
+formula1_service/node_modules
+formula1_frontend/node_modules
+
+formula1_service/dist
+formula1_frontend/dist
+
+formula1_service/coverage
