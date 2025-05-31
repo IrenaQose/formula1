@@ -5,7 +5,7 @@ import { ConstructorTeam } from '../../constructors/entities/constructor.entity'
 import { Season } from '../../seasons/entities/season.entity';
 
 @Entity('results')
-@Unique(['driverId', 'raceId'])
+@Unique(['driver_id', 'race_id'])
 export class Result {
   @PrimaryGeneratedColumn()
   id: number;
