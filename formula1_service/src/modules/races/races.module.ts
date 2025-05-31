@@ -7,6 +7,7 @@ import { RacesService } from './races.service';
 import { RacesController } from './races.controller';
 import { DriverStandingsModule } from '../driver-standings/driver-standings.module';
 import { ResultsModule } from '../results/results.module';
+import { RetryService } from '../../utils/retry.service';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { ResultsModule } from '../results/results.module';
     ResultsModule
   ],
   controllers: [RacesController],
-  providers: [RacesService],
+  providers: [RacesService, RetryService],
   exports: [RacesService]
 })
 export class RacesModule {} 

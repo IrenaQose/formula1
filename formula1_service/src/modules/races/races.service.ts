@@ -1,9 +1,7 @@
 import { env } from 'process';
 import { Repository } from 'typeorm';
-import { firstValueFrom } from 'rxjs';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Race } from './entities/race.entity';
@@ -12,6 +10,7 @@ import { RacesResponse, RaceResponse } from './interfaces/races.interface';
 import { Season } from '../seasons/entities/season.entity';
 import { DriverStandingsService } from '../driver-standings/driver-standings.service';
 import { ResultsService } from '../results/results.service';
+import { RetryService } from '../../utils/retry.service';
 
 
 @Injectable()
@@ -23,7 +22,7 @@ export class RacesService {
     private readonly raceRepository: Repository<Race>,
     @InjectRepository(Season)
     private readonly seasonRepository: Repository<Season>,
-    private readonly httpService: HttpService,
+    private readonly retryService: RetryService,
     private readonly driverStandingsService: DriverStandingsService,
     private readonly resultsService: ResultsService,
   ) {}
@@ -32,11 +31,9 @@ export class RacesService {
     try {
       const url = `${env.ERGAST_API_URL}/${year}/races`;
 
-      const response = await firstValueFrom(
-        this.httpService.get<ErgastRaceResponse>(url)
-      );
+      const response = await this.retryService.makeRequestWithRetry<ErgastRaceResponse>(url);
 
-      const races = response.data.MRData.RaceTable.Races;
+      const races = response.MRData.RaceTable.Races;
       this.logger.log(`Found ${races.length} races for ${year}`);
 
       // Find season

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Season } from './entities/season.entity';
-import { SeasonsResponse } from './interfaces/season.interface';
 import { DriverStandingsService } from '../driver-standings/driver-standings.service';
 
 @Injectable()

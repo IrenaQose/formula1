@@ -5,6 +5,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Driver } from './entities/driver.entity';
 import { DriversService } from './drivers.service';
 import { DriversController } from './drivers.controller';
+import { RetryService } from '../../utils/retry.service';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { DriversController } from './drivers.controller';
     HttpModule
   ],
   controllers: [DriversController],
-  providers: [DriversService],
+  providers: [DriversService, RetryService],
   exports: [DriversService]
 })
 export class DriversModule {} 

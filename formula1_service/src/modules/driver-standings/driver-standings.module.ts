@@ -10,6 +10,7 @@ import { Driver } from '../drivers/entities/driver.entity';
 import { Season } from '../seasons/entities/season.entity';
 import { Race } from '../races/entities/race.entity';
 import { ConstructorTeam } from '../constructors/entities/constructor.entity';
+import { RetryService } from '../../utils/retry.service';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { ConstructorTeam } from '../constructors/entities/constructor.entity';
     HttpModule
   ],
   controllers: [DriverStandingsController],
-  providers: [DriverStandingsService],
+  providers: [DriverStandingsService, RetryService],
   exports: [DriverStandingsService]
 })
 export class DriverStandingsModule {} 

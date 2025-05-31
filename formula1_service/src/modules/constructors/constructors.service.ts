@@ -1,12 +1,11 @@
 import { env } from 'process';
 import { Repository } from 'typeorm';
-import { firstValueFrom } from 'rxjs';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { ConstructorTeam } from './entities/constructor.entity';
+import { RetryService } from '../../utils/retry.service';
 
 interface ErgastConstructorResponse {
   MRData: {
@@ -29,7 +28,7 @@ export class ConstructorsService {
   constructor(
     @InjectRepository(ConstructorTeam)
     private readonly constructorRepository: Repository<ConstructorTeam>,
-    private readonly httpService: HttpService,
+    private readonly retryService: RetryService,
   ) {}
 
   async importConstructors(year: number): Promise<void> {
@@ -37,13 +36,9 @@ export class ConstructorsService {
       const url = `${env.ERGAST_API_URL}/${year}/constructors/`;
       this.logger.log(`Fetching constructors from ${url}`);
 
-      const response = await firstValueFrom(
-        this.httpService.get<ErgastConstructorResponse>(url)
-      );
-
-      const constructors = response.data.MRData.ConstructorTable.Constructors;
+      const response = await this.retryService.makeRequestWithRetry<ErgastConstructorResponse>(url);
+      const constructors = response.MRData.ConstructorTable.Constructors;
       this.logger.log(`Found ${constructors.length} constructors for ${year}`);
-    
 
       for (const constructorData of constructors) {
         // Find or create constructor

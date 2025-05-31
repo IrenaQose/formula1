@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import { env } from 'process';
 
 import { DriverStanding } from './entities/driver-standing.entity';
@@ -10,6 +8,7 @@ import { ErgastStandingsResponse } from './interfaces/driver-standing.interface'
 import { Driver } from '../drivers/entities/driver.entity';
 import { Season } from '../seasons/entities/season.entity';
 import { ConstructorTeam } from '../constructors/entities/constructor.entity';
+import { RetryService } from 'src/utils/retry.service';
 
 @Injectable()
 export class DriverStandingsService {
@@ -24,18 +23,16 @@ export class DriverStandingsService {
     private readonly seasonRepository: Repository<Season>,
     @InjectRepository(ConstructorTeam)
     private readonly constructorTeamRepository: Repository<ConstructorTeam>,
-    private readonly httpService: HttpService,
+    private readonly retryService: RetryService,
   ) {}
 
   async importDriverStandings(year: number): Promise<void> {
     try {
       const url = `${env.ERGAST_API_URL}/${year}/driverStandings`;
 
-      const response = await firstValueFrom(
-        this.httpService.get<ErgastStandingsResponse>(url)
-      );
+      const response = await this.retryService.makeRequestWithRetry<ErgastStandingsResponse>(url);
 
-      const standingsList = response.data.MRData.StandingsTable.StandingsLists[0];
+      const standingsList = response.MRData.StandingsTable.StandingsLists[0];
       if (!standingsList) {
         this.logger.warn(`No standings found for year ${year}`);
         return;

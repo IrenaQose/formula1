@@ -7,6 +7,9 @@ import { ConstructorsService } from './modules/constructors/constructors.service
 import { DriversService } from './modules/drivers/drivers.service';
 import { Season } from './modules/seasons/entities/season.entity';
 import { RateLimiterService } from './utils/rate-limiter.service';
+import { DriverStandingsService } from './modules/driver-standings/driver-standings.service';
+import { RacesService } from './modules/races/races.service';
+import { ResultsService } from './modules/results/results.service';
 
 @Injectable()
 export class AppService {
@@ -18,9 +21,12 @@ export class AppService {
     private readonly constructorsService: ConstructorsService,
     private readonly driversService: DriversService,
     private readonly rateLimiter: RateLimiterService,
+    private readonly racesService: RacesService,
+    private readonly resultsService: ResultsService,
+    private readonly driverStandingsService: DriverStandingsService,
   ) {}
 
-  async importAllData(): Promise<void> {
+  async importAllData(): Promise<void> {  
     try {
       const seasons = await this.seasonRepository.find({
         order: { year: 'ASC' }
@@ -32,9 +38,9 @@ export class AppService {
         operations: [
           async() =>  await this.constructorsService.importConstructors(parseInt(season.year)),
           async() =>  await this.driversService.importDrivers(parseInt(season.year)),
-          // async() =>  await this.racesService.importRaces(parseInt(season.year)),
-          // async() =>  await this.resultsService.importResults(parseInt(season.year)),
-          // async() =>  await this.driverStandingsService.importDriverStandings(parseInt(season.year)),
+          async() =>  await this.racesService.importRaces(parseInt(season.year)),
+          async() =>  await this.resultsService.importResults(parseInt(season.year)),
+          async() =>  await this.driverStandingsService.importDriverStandings(parseInt(season.year)),
         ]
       }));
 

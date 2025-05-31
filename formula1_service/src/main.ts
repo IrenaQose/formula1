@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
+import { AppService } from './app.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,9 @@ async function bootstrap() {
   } else {
     logger.log('Running in production mode - CORS disabled');
   }
+
+  const appService = app.get(AppService);
+  await appService.importAllData();
   
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

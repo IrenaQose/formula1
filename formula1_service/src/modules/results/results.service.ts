@@ -1,9 +1,7 @@
 import { Repository } from 'typeorm';
-import { firstValueFrom } from 'rxjs';
 import { env } from 'process';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Result } from './entities/result.entity';
@@ -12,6 +10,7 @@ import { Season } from '../seasons/entities/season.entity';
 import { Driver } from '../drivers/entities/driver.entity';
 import { Race } from '../races/entities/race.entity';
 import { ErgastResultsResponse } from './interfaces/ergastResults.interface';
+import { RetryService } from '../../utils/retry.service';
 
 
 @Injectable()
@@ -29,7 +28,7 @@ export class ResultsService {
     private readonly driverRepository: Repository<Driver>,
     @InjectRepository(ConstructorTeam)
     private readonly constructorRepository: Repository<ConstructorTeam>,
-    private readonly httpService: HttpService,
+    private readonly retryService: RetryService,
   ) {}
 
   async importResults(year: number, url?: string): Promise<void> {
@@ -37,15 +36,13 @@ export class ResultsService {
       const apiUrl = url || `${env.ERGAST_API_URL}/${year}/results?limit=100`;
       this.logger.log(`Fetching results from ${apiUrl}`);
 
-      const response = await firstValueFrom(
-        this.httpService.get<ErgastResultsResponse>(apiUrl)
-      );
+      const response = await this.retryService.makeRequestWithRetry<ErgastResultsResponse>(apiUrl);
       
-      const limit = parseInt(response.data.MRData.limit);
-      const total = parseInt(response.data.MRData.total);
-      const offset = parseInt(response.data.MRData.offset);
+      const limit = parseInt(response.MRData.limit);
+      const total = parseInt(response.MRData.total);
+      const offset = parseInt(response.MRData.offset);
 
-      const races = response.data.MRData.RaceTable.Races;
+      const races = response.MRData.RaceTable.Races;
       const nextOffset = limit + offset;
 
       this.logger.log(`Found ${races.length} races for ${year}`);

@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Driver } from './entities/driver.entity';
 import { ErgastResponse } from './interfaces/driver.interface';
+import { RetryService } from '../../utils/retry.service';
 
 
 @Injectable()
@@ -17,18 +18,16 @@ export class DriversService {
   constructor(
     @InjectRepository(Driver)
     private readonly driverRepository: Repository<Driver>,
-    private readonly httpService: HttpService,
+    private readonly retryService: RetryService,
   ) {}
 
   async importDrivers(year: number): Promise<void> {
     try {
       const url = `${env.ERGAST_API_URL}/${year}/drivers`;
 
-      const response = await firstValueFrom(
-        this.httpService.get<ErgastResponse>(url)
-      );
+      const response = await this.retryService.makeRequestWithRetry<ErgastResponse>(url);
 
-      const drivers = response.data.MRData.DriverTable.Drivers;
+      const drivers = response.MRData.DriverTable.Drivers;
       this.logger.log(`Found ${drivers.length} drivers for ${year}`);
 
       for (const driverData of drivers) {

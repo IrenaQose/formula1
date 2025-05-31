@@ -3,9 +3,9 @@ services:
     image: postgres:latest
     container_name: f1-db
     environment:
-      POSTGRES_USER: 
-      POSTGRES_PASSWORD: 
-      POSTGRES_DB: 
+      POSTGRES_USER: f1
+      POSTGRES_PASSWORD: f1
+      POSTGRES_DB: f1
     ports:
       - "5432:5432"
     volumes:
@@ -24,11 +24,11 @@ services:
     environment:
       - NODE_ENV=development 
       - PORT=3000
-      - DB_HOST=postgres
+      - DB_HOST=f1-db
       - DB_PORT=5432
-      - DB_USERNAME= 
-      - DB_PASSWORD=
-      - DB_DATABASE=
+      - DB_USERNAME=f1
+      - DB_PASSWORD=f1
+      - DB_DATABASE=f1
     ports:
       - "3000:3000"
     depends_on:

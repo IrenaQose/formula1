@@ -10,7 +10,6 @@ COPY . .
 
 RUN npm run build
 
-# Run migrations before starting the service
 RUN npm run migration:run
 
 EXPOSE 3000
