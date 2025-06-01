@@ -29,8 +29,14 @@ export class RacesService {
 
   async importRaces(year: number): Promise<void> {
     try {
-      const url = `${env.ERGAST_API_URL}/${year}/races`;
+      
+      const existingRacesInDB = await this.findByYear(year);
+      if (existingRacesInDB.data.races.length > 0) {
+        this.logger.log(`Races for ${year} already imported`);
+        return;
+      }
 
+      const url = `${env.ERGAST_API_URL}/${year}/races`;
       const response = await this.retryService.makeRequestWithRetry<ErgastRaceResponse>(url);
 
       const races = response.MRData.RaceTable.Races;
@@ -99,18 +105,6 @@ export class RacesService {
         'results.constructorTeam'
       ]
     });
-
-    const results = await this.resultsService.findByYear(year.toString());
-
-     // If no races are found, import them
-     if (races.length === 0) {
-      await this.importRaces(year);
-    }
-
-    //If no results are found, import them
-    if (results.length === 0) {
-      await this.resultsService.importResults(year);
-    }
 
     const transformedRaces: RaceResponse[] = await Promise.all(races.map(async race => {
       const winnerResult = race.results.find(result => result.position === 1);

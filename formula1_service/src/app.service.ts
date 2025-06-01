@@ -6,7 +6,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConstructorsService } from './modules/constructors/constructors.service';
 import { DriversService } from './modules/drivers/drivers.service';
 import { Season } from './modules/seasons/entities/season.entity';
-import { RateLimiterService } from './utils/rate-limiter.service';
 import { DriverStandingsService } from './modules/driver-standings/driver-standings.service';
 import { RacesService } from './modules/races/races.service';
 import { ResultsService } from './modules/results/results.service';
@@ -20,39 +19,49 @@ export class AppService {
     private readonly seasonRepository: Repository<Season>,
     private readonly constructorsService: ConstructorsService,
     private readonly driversService: DriversService,
-    private readonly rateLimiter: RateLimiterService,
     private readonly racesService: RacesService,
     private readonly resultsService: ResultsService,
     private readonly driverStandingsService: DriverStandingsService,
-  ) {}
+  ) { }
 
-  async importAllData(): Promise<void> {  
+  async importAllData(): Promise<void> {
     try {
       const seasons = await this.seasonRepository.find({
         order: { year: 'ASC' }
       });
 
-      // Create operations for each season
+      // Create operations for each season, grouped by dependencies
       const importOperations = seasons.map(season => ({
         year: parseInt(season.year),
-        operations: [
-          async() =>  await this.constructorsService.importConstructors(parseInt(season.year)),
-          async() =>  await this.driversService.importDrivers(parseInt(season.year)),
-          async() =>  await this.racesService.importRaces(parseInt(season.year)),
-          async() =>  await this.resultsService.importResults(parseInt(season.year)),
-          async() =>  await this.driverStandingsService.importDriverStandings(parseInt(season.year)),
+        batches: [
+          // First batch: independent data (constructors, drivers)
+          [
+            async () => await this.constructorsService.importConstructors(parseInt(season.year)),
+            async () => await this.driversService.importDrivers(parseInt(season.year)),
+          ],
+          // Second batch: races (needed for results)
+          [
+            async () => await this.racesService.importRaces(parseInt(season.year)),
+          ],
+          // Third batch: dependent data (results, standings)
+          [
+            async () => await this.resultsService.importResults(parseInt(season.year)),
+            async () => await this.driverStandingsService.importDriverStandings(parseInt(season.year)),
+          ]
         ]
       }));
 
-     
-      for (const { year, operations } of importOperations) {
-        this.logger.log(`Processing season ${year}`);
+      for (const { year, batches } of importOperations) {
+        const hasDriverStandings = await this.hasDriverStandingsPerYear(year);
 
-        await this.rateLimiter.executeBatchWithRateLimit(
-          operations,
-          `Season ${year} import`,
-          2
-        );
+        if (hasDriverStandings) {
+          this.logger.log(`Data for ${year} already imported`);
+          continue;
+        }
+
+        for (const batch of batches) {
+          await Promise.all(batch.map(operation => operation()));
+        }
         this.logger.log(`Completed processing season ${year}`);
       }
 
@@ -62,4 +71,13 @@ export class AppService {
       throw error;
     }
   }
+
+  async hasDriverStandingsPerYear(year: number): Promise<boolean> {
+    const driverStandingRepository = await this.driverStandingsService.findByYear(year);
+    if (driverStandingRepository.length > 0) {
+      return true;
+    }
+    return false;
+  }
+  
 }

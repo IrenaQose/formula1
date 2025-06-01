@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 export class RetryService {
   private readonly logger = new Logger(RetryService.name);
   private readonly MAX_RETRIES = 5;
-  private readonly INITIAL_RETRY_DELAY = 1000; // 1 second
+  private readonly INITIAL_RETRY_DELAY = 1500; // 1.5 second
 
   constructor(private readonly httpService: HttpService) {}
 

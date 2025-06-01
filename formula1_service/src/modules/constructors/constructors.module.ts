@@ -6,11 +6,10 @@ import { ConstructorTeam } from './entities/constructor.entity';
 import { ConstructorsService } from './constructors.service';
 import { ConstructorsController } from './constructors.controller';
 import { RetryService } from '../../utils/retry.service';
-import { Season } from '../seasons/entities/season.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ConstructorTeam, Season]),
+    TypeOrmModule.forFeature([ConstructorTeam]),
     HttpModule
   ],
   controllers: [ConstructorsController],

@@ -141,4 +141,30 @@ export class DriverStandingsService {
     }
   }
 
+  async findByYear(year: number): Promise<DriverStanding[]> {
+    try {
+      const season = await this.seasonRepository.findOne({
+        where: { year: year.toString() }
+      });
+
+      if (!season) {
+        this.logger.warn(`Season ${year} not found`);
+        return [];
+      }
+
+      // Check if there are driver standings for that season, if not, import them
+      const driverStandings = await this.driverStandingRepository.find({
+        where: {
+          season_id: season.id
+        },
+        relations: ['driver', 'constructorTeam', 'season'],
+        order: { position: 'ASC' }
+      });
+   
+      return driverStandings;
+    } catch (error) {
+      this.logger.error(`Error finding driver standings for ${year}:`, error);
+      throw error;
+    }
+  }
 } 

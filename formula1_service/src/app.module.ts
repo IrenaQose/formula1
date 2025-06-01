@@ -16,7 +16,6 @@ import { DriverStanding } from './modules/driver-standings/entities/driver-stand
 import { Driver } from './modules/drivers/entities/driver.entity';
 import { Race } from './modules/races/entities/race.entity';
 import { Result } from './modules/results/entities/result.entity';
-import { RateLimiterService } from './utils/rate-limiter.service';
 
 @Module({
   imports: [
@@ -44,6 +43,6 @@ import { RateLimiterService } from './utils/rate-limiter.service';
     DriverStandingsModule
   ],
   controllers: [AppController],
-  providers: [AppService, RateLimiterService],
+  providers: [AppService],
 })
 export class AppModule {}
