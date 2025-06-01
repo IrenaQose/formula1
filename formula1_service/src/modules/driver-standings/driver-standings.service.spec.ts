@@ -9,6 +9,7 @@ import { DriverStanding } from './entities/driver-standing.entity';
 import { Driver } from '../drivers/entities/driver.entity';
 import { Season } from '../seasons/entities/season.entity';
 import { ConstructorTeam } from '../constructors/entities/constructor.entity';
+import { RetryService } from '../../utils/retry.service';
 
 describe('DriverStandingsService', () => {
   let service: DriverStandingsService;
@@ -75,20 +76,26 @@ describe('DriverStandingsService', () => {
     data: {
       MRData: {
         StandingsTable: {
-          StandingsLists: [{
-            DriverStandings: [{
-              Driver: {
-                driverId: 'hamilton',
-              },
-              Constructors: [{
-                constructorId: 'mercedes',
-                name: 'Mercedes',
-              }],
-              points: '100',
-              position: '1',
-              wins: '5',
-            }],
-          }],
+          StandingsLists: [
+            {
+              DriverStandings: [
+                {
+                  Driver: {
+                    driverId: 'hamilton',
+                  },
+                  Constructors: [
+                    {
+                      constructorId: 'mercedes',
+                      name: 'Mercedes',
+                    },
+                  ],
+                  points: '100',
+                  position: '1',
+                  wins: '5',
+                },
+              ],
+            },
+          ],
         },
       },
     },
@@ -98,6 +105,7 @@ describe('DriverStandingsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DriverStandingsService,
+        RetryService,
         {
           provide: HttpService,
           useValue: mockHttpService,
@@ -123,10 +131,14 @@ describe('DriverStandingsService', () => {
 
     service = module.get<DriverStandingsService>(DriverStandingsService);
     httpService = module.get<HttpService>(HttpService);
-    driverStandingRepository = module.get<Repository<DriverStanding>>(getRepositoryToken(DriverStanding));
+    driverStandingRepository = module.get<Repository<DriverStanding>>(
+      getRepositoryToken(DriverStanding),
+    );
     driverRepository = module.get<Repository<Driver>>(getRepositoryToken(Driver));
     seasonRepository = module.get<Repository<Season>>(getRepositoryToken(Season));
-    constructorTeamRepository = module.get<Repository<ConstructorTeam>>(getRepositoryToken(ConstructorTeam));
+    constructorTeamRepository = module.get<Repository<ConstructorTeam>>(
+      getRepositoryToken(ConstructorTeam),
+    );
   });
 
   afterEach(() => {
@@ -157,9 +169,15 @@ describe('DriverStandingsService', () => {
 
       await service.importDriverStandings(year);
 
-      expect(mockHttpService.get).toHaveBeenCalledWith(`${process.env.ERGAST_API_URL}/${year}/driverStandings`);
-      expect(mockSeasonRepository.findOne).toHaveBeenCalledWith({ where: { year: year.toString() } });
-      expect(mockDriverRepository.findOne).toHaveBeenCalledWith({ where: { driver_ref: 'hamilton' } });
+      expect(mockHttpService.get).toHaveBeenCalledWith(
+        `${process.env.ERGAST_API_URL}/${year}/driverStandings`,
+      );
+      expect(mockSeasonRepository.findOne).toHaveBeenCalledWith({
+        where: { year: year.toString() },
+      });
+      expect(mockDriverRepository.findOne).toHaveBeenCalledWith({
+        where: { driver_ref: 'hamilton' },
+      });
       expect(mockConstructorTeamRepository.findOne).toHaveBeenCalledWith({
         where: {
           constructor_ref: 'mercedes',
@@ -171,15 +189,17 @@ describe('DriverStandingsService', () => {
 
     it('should handle no standings found', async () => {
       const year = 2024;
-      mockHttpService.get.mockReturnValue(of({
-        data: {
-          MRData: {
-            StandingsTable: {
-              StandingsLists: [],
+      mockHttpService.get.mockReturnValue(
+        of({
+          data: {
+            MRData: {
+              StandingsTable: {
+                StandingsLists: [],
+              },
             },
           },
-        },
-      }));
+        }),
+      );
 
       await service.importDriverStandings(year);
 
@@ -217,7 +237,7 @@ describe('DriverStandingsService', () => {
 
       expect(result).toBeDefined();
       expect(mockDriverStandingRepository.find).toHaveBeenCalledWith({
-        where: { season_id: mockSeason.id }
+        where: { season_id: mockSeason.id },
       });
     });
 
@@ -250,4 +270,4 @@ describe('DriverStandingsService', () => {
       expect(result).toBeNull();
     });
   });
-}); 
+});

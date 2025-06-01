@@ -12,7 +12,7 @@ describe('SeasonsController', () => {
 
   const mockSeason = {
     id: 1,
-    year: '2024'
+    year: '2024',
   } as Season;
 
   const mockDriver = {
@@ -98,7 +98,9 @@ describe('SeasonsController', () => {
       const expectedResponse = {
         seasons: [mockSeasonWithChampion],
       };
-      jest.spyOn(service, 'findSeasonChampions').mockResolvedValue(expectedResponse);
+      jest
+        .spyOn(service, 'findSeasonChampions')
+        .mockResolvedValue(expectedResponse);
 
       const result = await controller.getSeasonsChampions(2020, 2024);
       expect(result).toEqual(expectedResponse);
@@ -109,7 +111,9 @@ describe('SeasonsController', () => {
       const expectedResponse = {
         seasons: [],
       };
-      jest.spyOn(service, 'findSeasonChampions').mockResolvedValue(expectedResponse);
+      jest
+        .spyOn(service, 'findSeasonChampions')
+        .mockResolvedValue(expectedResponse);
 
       const result = await controller.getSeasonsChampions(2020, 2024);
       expect(result).toEqual(expectedResponse);
@@ -117,12 +121,13 @@ describe('SeasonsController', () => {
     });
 
     it('should handle service errors', async () => {
-      jest.spyOn(service, 'findSeasonChampions')
+      jest
+        .spyOn(service, 'findSeasonChampions')
         .mockRejectedValue(new Error('Service error'));
 
-      await expect(controller.getSeasonsChampions(2020, 2024))
-        .rejects
-        .toThrow('Service error');
+      await expect(controller.getSeasonsChampions(2020, 2024)).rejects.toThrow(
+        'Service error',
+      );
     });
   });
-}); 
+});

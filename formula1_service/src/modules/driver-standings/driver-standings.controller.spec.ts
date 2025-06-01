@@ -59,8 +59,8 @@ describe('DriverStandingsController', () => {
       const result = await controller.importDriverStandings(year);
 
       expect(result).toEqual({
-        message: `Driver standings for ${year} imported successfully`
+        message: `Driver standings for ${year} imported successfully`,
       });
     });
   });
-}); 
+});

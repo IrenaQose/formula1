@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { HttpService } from '@nestjs/axios';
 import { Repository } from 'typeorm';
 import { of, throwError } from 'rxjs';
+import { RetryService } from '../../utils/retry.service';
 
 import { ConstructorsService } from './constructors.service';
 import { ConstructorTeam } from './entities/constructor.entity';
@@ -57,6 +58,7 @@ describe('ConstructorsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ConstructorsService,
+        RetryService,
         {
           provide: getRepositoryToken(ConstructorTeam),
           useValue: mockRepository,
@@ -140,4 +142,4 @@ describe('ConstructorsService', () => {
       expect(mockRepository.find).toHaveBeenCalled();
     });
   });
-}); 
+});

@@ -8,12 +8,9 @@ import { ConstructorsController } from './constructors.controller';
 import { RetryService } from '../../utils/retry.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([ConstructorTeam]),
-    HttpModule
-  ],
+  imports: [TypeOrmModule.forFeature([ConstructorTeam]), HttpModule],
   controllers: [ConstructorsController],
   providers: [ConstructorsService, RetryService],
-  exports: [ConstructorsService]
+  exports: [ConstructorsService],
 })
-export class ConstructorsModule {} 
+export class ConstructorsModule {}

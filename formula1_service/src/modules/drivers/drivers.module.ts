@@ -8,12 +8,9 @@ import { DriversController } from './drivers.controller';
 import { RetryService } from '../../utils/retry.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Driver]),
-    HttpModule
-  ],
+  imports: [TypeOrmModule.forFeature([Driver]), HttpModule],
   controllers: [DriversController],
   providers: [DriversService, RetryService],
-  exports: [DriversService]
+  exports: [DriversService],
 })
-export class DriversModule {} 
+export class DriversModule {}

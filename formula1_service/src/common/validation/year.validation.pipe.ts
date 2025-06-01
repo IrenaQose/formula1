@@ -8,10 +8,8 @@ export class YearValidationPipe implements PipeTransform<number, number> {
     }
     const currentYear = new Date().getFullYear();
     if (isNaN(value) || value < 2005 || value > currentYear) {
-      throw new BadRequestException(
-        `Year must be a valid number between 2005 and ${currentYear}`,
-      );
+      throw new BadRequestException(`Year must be a valid number between 2005 and ${currentYear}`);
     }
     return value;
   }
-} 
+}

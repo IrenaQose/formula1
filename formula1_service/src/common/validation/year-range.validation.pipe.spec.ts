@@ -8,7 +8,10 @@ describe('YearRangeValidationPipe', () => {
   });
 
   it('should pass valid year range', () => {
-    expect(pipe.transform({ startYear: 2010, endYear: 2020 })).toEqual({ startYear: 2010, endYear: 2020 });
+    expect(pipe.transform({ startYear: 2010, endYear: 2020 })).toEqual({
+      startYear: 2010,
+      endYear: 2020,
+    });
   });
 
   it('should throw if startYear < MIN_YEAR', () => {
@@ -24,6 +27,6 @@ describe('YearRangeValidationPipe', () => {
   });
 
   it('should allow missing years (defaults)', () => {
-    expect(pipe.transform({})).toEqual({startYear: 2005, endYear: 2025});
+    expect(pipe.transform({})).toEqual({ startYear: 2005, endYear: 2025 });
   });
 });

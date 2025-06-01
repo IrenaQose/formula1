@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 
 import { Season } from '../../seasons/entities/season.entity';
 import { Result } from '../../results/entities/result.entity';
@@ -32,4 +41,4 @@ export class Race {
 
   @UpdateDateColumn()
   updated_at: Date;
-} 
+}

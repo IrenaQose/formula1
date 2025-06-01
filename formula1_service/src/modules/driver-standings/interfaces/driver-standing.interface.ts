@@ -67,4 +67,4 @@ export interface DriverStandingResponse {
 export interface DriverStandingsResponse {
   standings: DriverStandingResponse[];
   total: number;
-} 
+}

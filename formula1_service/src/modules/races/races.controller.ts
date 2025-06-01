@@ -14,9 +14,7 @@ export class RacesController {
   }
 
   @Get(':year')
-  async findByYear(
-    @Param('year', ParseIntPipe) year: number
-  ): Promise<{ data: RacesResponse; }> {
+  async findByYear(@Param('year', ParseIntPipe) year: number): Promise<{ data: RacesResponse }> {
     return this.racesService.findByYear(year);
   }
 
@@ -25,4 +23,4 @@ export class RacesController {
     await this.racesService.importRaces(year);
     return { message: `Races for ${year} imported successfully` };
   }
-} 
+}

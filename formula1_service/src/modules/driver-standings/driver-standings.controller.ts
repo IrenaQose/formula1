@@ -6,11 +6,17 @@ export class DriverStandingsController {
   constructor(private readonly driverStandingsService: DriverStandingsService) {}
 
   @Post('import/:year')
-  async importDriverStandings(@Param('year', new ParseIntPipe({
-    errorHttpStatusCode: 400,
-    exceptionFactory: () => new BadRequestException('Year must be a valid number')
-  })) year: number) {
+  async importDriverStandings(
+    @Param(
+      'year',
+      new ParseIntPipe({
+        errorHttpStatusCode: 400,
+        exceptionFactory: () => new BadRequestException('Year must be a valid number'),
+      }),
+    )
+    year: number,
+  ) {
     await this.driverStandingsService.importDriverStandings(year);
     return { message: `Driver standings for ${year} imported successfully` };
   }
-} 
+}

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Param, ParseIntPipe, Query, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  ParseIntPipe,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 
 import { ResultsService } from './results.service';
 import { Result } from './entities/result.entity';
@@ -25,9 +33,7 @@ export class ResultsController {
   }
 
   @Get(':year')
-  async findByYear(
-    @Param('year', YearValidationPipe) year: number,
-  ) {
+  async findByYear(@Param('year', YearValidationPipe) year: number) {
     return this.resultsService.findByYear(year.toString());
   }
 
@@ -36,4 +42,4 @@ export class ResultsController {
     await this.resultsService.importResults(year);
     return { message: `Results for ${year} imported successfully` };
   }
-} 
+}

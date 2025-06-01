@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { Result } from '../../results/entities/result.entity';
 
 @Entity('constructors')
@@ -23,4 +30,4 @@ export class ConstructorTeam {
 
   @UpdateDateColumn()
   updated_at: Date;
-} 
+}

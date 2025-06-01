@@ -7,12 +7,9 @@ import { SeasonsService } from './seasons.service';
 import { SeasonsController } from './seasons.controller';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Season, DriverStanding]),
-    DriverStandingsModule
-  ],
+  imports: [TypeOrmModule.forFeature([Season, DriverStanding]), DriverStandingsModule],
   controllers: [SeasonsController],
   providers: [SeasonsService],
-  exports: [SeasonsService]
+  exports: [SeasonsService],
 })
-export class SeasonsModule {} 
+export class SeasonsModule {}

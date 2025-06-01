@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Unique,
+} from 'typeorm';
 import { Race } from '../../races/entities/race.entity';
 import { Driver } from '../../drivers/entities/driver.entity';
 import { ConstructorTeam } from '../../constructors/entities/constructor.entity';
@@ -61,4 +70,4 @@ export class Result {
 
   @UpdateDateColumn()
   updated_at: Date;
-} 
+}

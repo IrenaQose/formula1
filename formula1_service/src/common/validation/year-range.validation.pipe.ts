@@ -25,7 +25,7 @@ export class YearRangeValidationPipe implements PipeTransform<YearRange, YearRan
       }
       if (startYear < this.MIN_YEAR || startYear > this.MAX_YEAR) {
         throw new BadRequestException(
-          `Start year must be between ${this.MIN_YEAR} and ${this.MAX_YEAR}`
+          `Start year must be between ${this.MIN_YEAR} and ${this.MAX_YEAR}`,
         );
       }
     }
@@ -37,7 +37,7 @@ export class YearRangeValidationPipe implements PipeTransform<YearRange, YearRan
       }
       if (endYear < this.MIN_YEAR || endYear > this.MAX_YEAR) {
         throw new BadRequestException(
-          `End year must be between ${this.MIN_YEAR} and ${this.MAX_YEAR}`
+          `End year must be between ${this.MIN_YEAR} and ${this.MAX_YEAR}`,
         );
       }
     }
@@ -53,7 +53,7 @@ export class YearRangeValidationPipe implements PipeTransform<YearRange, YearRan
 
     return {
       startYear: finalStartYear,
-      endYear: finalEndYear
+      endYear: finalEndYear,
     };
   }
-} 
+}

@@ -11,4 +11,4 @@ export const databaseConfig = (configService: ConfigService): TypeOrmModuleOptio
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: false,
   logging: configService.get('NODE_ENV', 'development') === 'development',
-}); 
+});

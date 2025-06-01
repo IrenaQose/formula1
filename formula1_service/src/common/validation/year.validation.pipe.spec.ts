@@ -13,11 +13,15 @@ describe('YearValidationPipe', () => {
   });
 
   it('should throw error if year < 2005', () => {
-    expect(() => pipe.transform(1949)).toThrow(`Year must be a valid number between 2005 and ${currentYear}`);
+    expect(() => pipe.transform(1949)).toThrow(
+      `Year must be a valid number between 2005 and ${currentYear}`,
+    );
   });
 
   it('should throw error if year > current year', () => {
-    expect(() => pipe.transform(currentYear + 1)).toThrow(`Year must be a valid number between 2005 and ${currentYear}`);
+    expect(() => pipe.transform(currentYear + 1)).toThrow(
+      `Year must be a valid number between 2005 and ${currentYear}`,
+    );
   });
 
   it('should throw error if year is not a 4-digit number', () => {
@@ -25,4 +29,4 @@ describe('YearValidationPipe', () => {
     expect(() => pipe.transform(123 as any)).toThrow('Year must be a 4-digit number');
     expect(() => pipe.transform(NaN as any)).toThrow('Year must be a 4-digit number');
   });
-}); 
+});

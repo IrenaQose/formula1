@@ -3,7 +3,6 @@ import { ResultsController } from './results.controller';
 import { ResultsService } from './results.service';
 import { BadRequestException } from '@nestjs/common';
 
-
 describe('ResultsController', () => {
   let controller: ResultsController;
   let service: ResultsService;
@@ -17,9 +16,7 @@ describe('ResultsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ResultsController],
-      providers: [
-        { provide: ResultsService, useValue: mockResultsService }
-      ],
+      providers: [{ provide: ResultsService, useValue: mockResultsService }],
     }).compile();
 
     controller = module.get<ResultsController>(ResultsController);
@@ -75,7 +72,6 @@ describe('ResultsController', () => {
       mockResultsService.findByYear.mockRejectedValue(new BadRequestException('DB error'));
       await expect(controller.findByYear(2024)).rejects.toThrow(BadRequestException);
     });
-
   });
 
   describe('importResults', () => {
@@ -93,4 +89,4 @@ describe('ResultsController', () => {
       await expect(controller.importResults(year)).rejects.toThrow(BadRequestException);
     });
   });
-}); 
+});

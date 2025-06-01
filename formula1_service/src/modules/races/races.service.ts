@@ -9,9 +9,7 @@ import { ErgastRaceResponse } from './interfaces/ergastRace.interface';
 import { RacesResponse, RaceResponse } from './interfaces/races.interface';
 import { Season } from '../seasons/entities/season.entity';
 import { DriverStandingsService } from '../driver-standings/driver-standings.service';
-import { ResultsService } from '../results/results.service';
 import { RetryService } from '../../utils/retry.service';
-
 
 @Injectable()
 export class RacesService {
@@ -24,12 +22,10 @@ export class RacesService {
     private readonly seasonRepository: Repository<Season>,
     private readonly retryService: RetryService,
     private readonly driverStandingsService: DriverStandingsService,
-    private readonly resultsService: ResultsService,
   ) {}
 
   async importRaces(year: number): Promise<void> {
     try {
-      
       const existingRacesInDB = await this.findByYear(year);
       if (existingRacesInDB.data.races.length > 0) {
         this.logger.log(`Races for ${year} already imported`);
@@ -37,14 +33,15 @@ export class RacesService {
       }
 
       const url = `${env.ERGAST_API_URL}/${year}/races`;
-      const response = await this.retryService.makeRequestWithRetry<ErgastRaceResponse>(url);
+      const response =
+        await this.retryService.makeRequestWithRetry<ErgastRaceResponse>(url);
 
       const races = response.MRData.RaceTable.Races;
       this.logger.log(`Found ${races.length} races for ${year}`);
 
       // Find season
-      const season = await this.seasonRepository.findOne({ 
-        where: { year: year.toString() } 
+      const season = await this.seasonRepository.findOne({
+        where: { year: year.toString() },
       });
 
       if (!season) {
@@ -53,10 +50,10 @@ export class RacesService {
 
       for (const raceData of races) {
         let race = await this.raceRepository.findOne({
-          where: { 
+          where: {
             name: raceData.raceName,
-            season_id: season.id
-          }
+            season_id: season.id,
+          },
         });
 
         const cleanTime = raceData.time.replace(/Z$/, '');
@@ -65,7 +62,7 @@ export class RacesService {
             name: raceData.raceName,
             date: new Date(raceData.date),
             time: cleanTime || null,
-            season_id: season.id
+            season_id: season.id,
           } as Race);
           await this.raceRepository.save(race);
           this.logger.log(`Created and saved race: ${race.name}`);
@@ -81,52 +78,66 @@ export class RacesService {
     }
   }
 
-  async findAll(): Promise<{ data: Race[]; }> {
+  async findAll(): Promise<{ data: Race[] }> {
     const data = await this.raceRepository.find({
       order: { date: 'ASC' },
-      relations: ['season']
+      relations: ['season'],
     });
 
     return {
-      data
+      data,
     };
   }
 
-  async findByYear(year: number): Promise<{ data: RacesResponse}> {
+  async findByYear(year: number): Promise<{ data: RacesResponse }> {
     const races = await this.raceRepository.find({
       where: {
-        season: { year: year.toString() }
+        season: { year: year.toString() },
       },
       order: { date: 'ASC' },
       relations: [
         'season',
         'results',
         'results.driver',
-        'results.constructorTeam'
-      ]
+        'results.constructorTeam',
+      ],
     });
 
-    const transformedRaces: RaceResponse[] = await Promise.all(races.map(async race => {
-      const winnerResult = race.results.find(result => result.position === 1);
-
+    if (!races) {
       return {
-        id: race.id,
-        name: race.name,
-        date: race.date,
-        champion: winnerResult?.driver || null,
-        constructor: winnerResult?.constructorTeam?.name || '',
-        laps: winnerResult?.laps || 0,
-        time: winnerResult?.time || '',
+        data: {
+          races: [],
+          champion: null,
+        },
       };
-    }));
+    }
 
-    const seasonChampion = await this.driverStandingsService.findSeasonChampion(year);
+    const transformedRaces: RaceResponse[] = await Promise.all(
+      races.map((race) => {
+        const winnerResult = race.results.find(
+          (result) => result.position === 1,
+        );
+
+        return {
+          id: race.id,
+          name: race.name,
+          date: race.date,
+          champion: winnerResult?.driver || null,
+          constructor: winnerResult?.constructorTeam?.name || '',
+          laps: winnerResult?.laps || 0,
+          time: winnerResult?.time || '',
+        };
+      }),
+    );
+
+    const seasonChampion =
+      await this.driverStandingsService.findSeasonChampion(year);
 
     return {
       data: {
-        races: transformedRaces,
-        champion: seasonChampion
-      }
+        races: transformedRaces || [],
+        champion: seasonChampion,
+      },
     };
   }
-} 
+}

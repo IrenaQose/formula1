@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
-  
+
   // Enable CORS for development
   if (process.env.NODE_ENV !== 'production') {
     app.enableCors({
@@ -21,7 +21,7 @@ async function bootstrap() {
 
   const appService = app.get(AppService);
   await appService.importAllData();
-  
+
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   logger.log(`Application is running on: http://localhost:${port}`);

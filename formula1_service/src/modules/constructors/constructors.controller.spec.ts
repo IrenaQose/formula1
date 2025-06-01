@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, Logger, ParseIntPipe } from '@nestjs/common';
 import { ConstructorsController } from './constructors.controller';
 import { ConstructorsService } from './constructors.service';
 
@@ -19,7 +18,6 @@ describe('ConstructorsController', () => {
     findAll: jest.fn(),
   };
 
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ConstructorsController],
@@ -27,7 +25,7 @@ describe('ConstructorsController', () => {
         {
           provide: ConstructorsService,
           useValue: mockConstructorsService,
-        }
+        },
       ],
     }).compile();
 
@@ -51,8 +49,12 @@ describe('ConstructorsController', () => {
 
       await controller.importConstructors(year);
 
-      expect(mockConstructorsService.importConstructors).toHaveBeenCalledWith(year);
-      expect(loggerSpy).toHaveBeenCalledWith(`Successfully imported constructors for year ${year}`);
+      expect(mockConstructorsService.importConstructors).toHaveBeenCalledWith(
+        year,
+      );
+      expect(loggerSpy).toHaveBeenCalledWith(
+        `Successfully imported constructors for year ${year}`,
+      );
     });
 
     it('should handle errors from the service', async () => {
@@ -60,8 +62,12 @@ describe('ConstructorsController', () => {
       const error = new Error('Import failed');
       mockConstructorsService.importConstructors.mockRejectedValue(error);
 
-      await expect(controller.importConstructors(year)).rejects.toThrow('Import failed');
-      expect(mockConstructorsService.importConstructors).toHaveBeenCalledWith(year);
+      await expect(controller.importConstructors(year)).rejects.toThrow(
+        'Import failed',
+      );
+      expect(mockConstructorsService.importConstructors).toHaveBeenCalledWith(
+        year,
+      );
     });
 
     it('should return correct response format', async () => {
@@ -71,7 +77,7 @@ describe('ConstructorsController', () => {
       const result = await controller.importConstructors(year);
 
       expect(result).toEqual({
-        message: `Constructors for ${year} imported successfully`
+        message: `Constructors for ${year} imported successfully`,
       });
     });
   });
@@ -100,8 +106,10 @@ describe('ConstructorsController', () => {
       const error = new Error('Failed to fetch constructors');
       mockConstructorsService.findAll.mockRejectedValue(error);
 
-      await expect(controller.findAll()).rejects.toThrow('Failed to fetch constructors');
+      await expect(controller.findAll()).rejects.toThrow(
+        'Failed to fetch constructors',
+      );
       expect(mockConstructorsService.findAll).toHaveBeenCalled();
     });
   });
-}); 
+});

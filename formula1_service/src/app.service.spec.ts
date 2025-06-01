@@ -8,8 +8,8 @@ import { DriversService } from './modules/drivers/drivers.service';
 import { RacesService } from './modules/races/races.service';
 import { ResultsService } from './modules/results/results.service';
 import { DriverStandingsService } from './modules/driver-standings/driver-standings.service';
-import { RateLimiterService } from './utils/rate-limiter.service';
-import { In } from 'typeorm';
+import { RetryService } from './utils/retry.service';
+import { HttpService } from '@nestjs/axios';
 
 describe('AppService', () => {
   let service: AppService;
@@ -19,12 +19,11 @@ describe('AppService', () => {
   let racesService: RacesService;
   let resultsService: ResultsService;
   let driverStandingsService: DriverStandingsService;
-  let rateLimiter: RateLimiterService;
 
   const mockSeasons = [
     { id: 1, year: '2022' },
     { id: 2, year: '2023' },
-    { id: 3, year: '2024' }
+    { id: 3, year: '2024' },
   ];
 
   const mockSeasonRepository = {
@@ -49,16 +48,20 @@ describe('AppService', () => {
 
   const mockDriverStandingsService = {
     importDriverStandings: jest.fn(),
-  };
-
-  const mockRateLimiter = {
-    executeBatchWithRateLimit: jest.fn(),
+    findByYear: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AppService,
+        RetryService,
+        {
+          provide: HttpService,
+          useValue: {
+            get: jest.fn(),
+          },
+        },
         {
           provide: getRepositoryToken(Season),
           useValue: mockSeasonRepository,
@@ -83,21 +86,20 @@ describe('AppService', () => {
           provide: DriverStandingsService,
           useValue: mockDriverStandingsService,
         },
-        {
-          provide: RateLimiterService,
-          useValue: mockRateLimiter,
-        },
       ],
     }).compile();
 
     service = module.get<AppService>(AppService);
-    seasonRepository = module.get<Repository<Season>>(getRepositoryToken(Season));
+    seasonRepository = module.get<Repository<Season>>(
+      getRepositoryToken(Season),
+    );
     constructorsService = module.get<ConstructorsService>(ConstructorsService);
     driversService = module.get<DriversService>(DriversService);
     racesService = module.get<RacesService>(RacesService);
     resultsService = module.get<ResultsService>(ResultsService);
-    driverStandingsService = module.get<DriverStandingsService>(DriverStandingsService);
-    rateLimiter = module.get<RateLimiterService>(RateLimiterService);
+    driverStandingsService = module.get<DriverStandingsService>(
+      DriverStandingsService,
+    );
   });
 
   afterEach(() => {
@@ -111,33 +113,55 @@ describe('AppService', () => {
   describe('importAllData', () => {
     it('should successfully import data for all seasons', async () => {
       mockSeasonRepository.find.mockResolvedValue(mockSeasons);
-      mockRateLimiter.executeBatchWithRateLimit.mockResolvedValue(undefined);
+      mockConstructorsService.importConstructors.mockResolvedValue(undefined);
+      mockDriversService.importDrivers.mockResolvedValue(undefined);
+      mockRacesService.importRaces.mockResolvedValue(undefined);
+      mockResultsService.importResults.mockResolvedValue(undefined);
+      mockDriverStandingsService.importDriverStandings.mockResolvedValue(
+        undefined,
+      );
 
       await service.importAllData();
 
       expect(mockSeasonRepository.find).toHaveBeenCalledWith({
-        order: { year: 'ASC' }
+        order: { year: 'ASC' },
       });
 
-      // Verify rate limiter was called for each season
-      expect(mockRateLimiter.executeBatchWithRateLimit).toHaveBeenCalledTimes(3);
-      
-      // Verify each season's operations
-      mockSeasons.forEach((season, index) => {
+      // Verify each service was called for each season
+      mockSeasons.forEach((season) => {
         const year = parseInt(season.year);
-        expect(mockRateLimiter.executeBatchWithRateLimit).toHaveBeenNthCalledWith(
-          index + 1,
-          expect.arrayContaining([
-            expect.any(Function), // constructors
-            expect.any(Function), // drivers
-            expect.any(Function), // races
-            expect.any(Function), // results
-            expect.any(Function), // driver standings
-          ]),
-          `Season ${year} import`,
-          2
+        expect(mockConstructorsService.importConstructors).toHaveBeenCalledWith(
+          year,
         );
+        expect(mockDriversService.importDrivers).toHaveBeenCalledWith(year);
+        expect(mockRacesService.importRaces).toHaveBeenCalledWith(year);
+        expect(mockResultsService.importResults).toHaveBeenCalledWith(year);
+        expect(
+          mockDriverStandingsService.importDriverStandings,
+        ).toHaveBeenCalledWith(year);
       });
+    });
+
+    it('should execute import operations in correct order for each season', async () => {
+      mockSeasonRepository.find.mockResolvedValue([mockSeasons[0]]);
+      await service.importAllData();
+
+      // Verify call order
+      const constructorCall =
+        mockConstructorsService.importConstructors.mock.invocationCallOrder[0];
+      const driverCall =
+        mockDriversService.importDrivers.mock.invocationCallOrder[0];
+      const raceCall = mockRacesService.importRaces.mock.invocationCallOrder[0];
+      const resultCall =
+        mockResultsService.importResults.mock.invocationCallOrder[0];
+      const standingCall =
+        mockDriverStandingsService.importDriverStandings.mock
+          .invocationCallOrder[0];
+
+      expect(constructorCall).toBeLessThan(driverCall);
+      expect(driverCall).toBeLessThan(raceCall);
+      expect(raceCall).toBeLessThan(resultCall);
+      expect(resultCall).toBeLessThan(standingCall);
     });
 
     it('should handle empty seasons list', async () => {
@@ -145,18 +169,33 @@ describe('AppService', () => {
 
       await service.importAllData();
 
-      expect(mockSeasonRepository.find).toHaveBeenCalled();
-      expect(mockRateLimiter.executeBatchWithRateLimit).not.toHaveBeenCalled();
+      expect(mockSeasonRepository.find).toHaveBeenCalledWith({
+        order: { year: 'ASC' },
+      });
+      expect(mockConstructorsService.importConstructors).not.toHaveBeenCalled();
+      expect(mockDriversService.importDrivers).not.toHaveBeenCalled();
+      expect(mockRacesService.importRaces).not.toHaveBeenCalled();
+      expect(mockResultsService.importResults).not.toHaveBeenCalled();
+      expect(
+        mockDriverStandingsService.importDriverStandings,
+      ).not.toHaveBeenCalled();
     });
 
     it('should handle errors during import', async () => {
       mockSeasonRepository.find.mockResolvedValue(mockSeasons);
       const error = new Error('Import failed');
-      mockRateLimiter.executeBatchWithRateLimit.mockRejectedValue(error);
+      mockConstructorsService.importConstructors.mockRejectedValue(error);
 
       await expect(service.importAllData()).rejects.toThrow('Import failed');
-      expect(mockSeasonRepository.find).toHaveBeenCalled();
-      expect(mockRateLimiter.executeBatchWithRateLimit).toHaveBeenCalled();
+      expect(mockSeasonRepository.find).toHaveBeenCalledWith({
+        order: { year: 'ASC' },
+      });
+      expect(mockConstructorsService.importConstructors).toHaveBeenCalled();
+      expect(mockRacesService.importRaces).not.toHaveBeenCalled();
+      expect(mockResultsService.importResults).not.toHaveBeenCalled();
+      expect(
+        mockDriverStandingsService.importDriverStandings,
+      ).not.toHaveBeenCalled();
     });
 
     it('should handle errors from season repository', async () => {
@@ -164,8 +203,39 @@ describe('AppService', () => {
       mockSeasonRepository.find.mockRejectedValue(error);
 
       await expect(service.importAllData()).rejects.toThrow('Database error');
-      expect(mockSeasonRepository.find).toHaveBeenCalled();
-      expect(mockRateLimiter.executeBatchWithRateLimit).not.toHaveBeenCalled();
+      expect(mockSeasonRepository.find).toHaveBeenCalledWith({
+        order: { year: 'ASC' },
+      });
+      expect(mockConstructorsService.importConstructors).not.toHaveBeenCalled();
+      expect(mockDriversService.importDrivers).not.toHaveBeenCalled();
+      expect(mockRacesService.importRaces).not.toHaveBeenCalled();
+      expect(mockResultsService.importResults).not.toHaveBeenCalled();
+      expect(
+        mockDriverStandingsService.importDriverStandings,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should handle partial import failures', async () => {
+      mockSeasonRepository.find.mockResolvedValue(mockSeasons);
+      const year = parseInt(mockSeasons[0].year);
+      const error = new Error('Partial import failed');
+
+      mockConstructorsService.importConstructors.mockResolvedValue(undefined);
+      mockDriversService.importDrivers.mockRejectedValue(error);
+
+      await expect(service.importAllData()).rejects.toThrow(
+        'Partial import failed',
+      );
+
+      expect(mockConstructorsService.importConstructors).toHaveBeenCalledWith(
+        year,
+      );
+      expect(mockDriversService.importDrivers).toHaveBeenCalledWith(year);
+      expect(mockRacesService.importRaces).not.toHaveBeenCalled();
+      expect(mockResultsService.importResults).not.toHaveBeenCalled();
+      expect(
+        mockDriverStandingsService.importDriverStandings,
+      ).not.toHaveBeenCalled();
     });
   });
-}); 
+});

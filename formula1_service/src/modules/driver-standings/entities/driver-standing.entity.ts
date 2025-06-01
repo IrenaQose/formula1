@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, Unique, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Unique,
+  JoinColumn,
+} from 'typeorm';
 import { Driver } from '../../drivers/entities/driver.entity';
 import { Race } from '../../races/entities/race.entity';
 import { Season } from '../../seasons/entities/season.entity';
@@ -12,7 +21,6 @@ export class DriverStanding {
 
   @Column()
   driver_id: number;
-
 
   @Column()
   season_id: number;
@@ -33,7 +41,6 @@ export class DriverStanding {
   @JoinColumn({ name: 'driver_id' })
   driver: Driver;
 
-
   @ManyToOne(() => Season)
   @JoinColumn({ name: 'season_id' })
   season: Season;
@@ -47,4 +54,4 @@ export class DriverStanding {
 
   @UpdateDateColumn()
   updated_at: Date;
-} 
+}

@@ -22,33 +22,42 @@ export class AppService {
     private readonly racesService: RacesService,
     private readonly resultsService: ResultsService,
     private readonly driverStandingsService: DriverStandingsService,
-  ) { }
+  ) {}
 
   async importAllData(): Promise<void> {
     try {
       const seasons = await this.seasonRepository.find({
-        order: { year: 'ASC' }
+        order: { year: 'ASC' },
       });
 
       // Create operations for each season, grouped by dependencies
-      const importOperations = seasons.map(season => ({
+      const importOperations = seasons.map((season) => ({
         year: parseInt(season.year),
         batches: [
           // First batch: independent data (constructors, drivers)
           [
-            async () => await this.constructorsService.importConstructors(parseInt(season.year)),
-            async () => await this.driversService.importDrivers(parseInt(season.year)),
+            async () =>
+              await this.constructorsService.importConstructors(
+                parseInt(season.year),
+              ),
+            async () =>
+              await this.driversService.importDrivers(parseInt(season.year)),
           ],
           // Second batch: races (needed for results)
           [
-            async () => await this.racesService.importRaces(parseInt(season.year)),
+            async () =>
+              await this.racesService.importRaces(parseInt(season.year)),
           ],
           // Third batch: dependent data (results, standings)
           [
-            async () => await this.resultsService.importResults(parseInt(season.year)),
-            async () => await this.driverStandingsService.importDriverStandings(parseInt(season.year)),
-          ]
-        ]
+            async () =>
+              await this.resultsService.importResults(parseInt(season.year)),
+            async () =>
+              await this.driverStandingsService.importDriverStandings(
+                parseInt(season.year),
+              ),
+          ],
+        ],
       }));
 
       for (const { year, batches } of importOperations) {
@@ -60,7 +69,7 @@ export class AppService {
         }
 
         for (const batch of batches) {
-          await Promise.all(batch.map(operation => operation()));
+          await Promise.all(batch.map((operation) => operation()));
         }
         this.logger.log(`Completed processing season ${year}`);
       }
@@ -73,11 +82,8 @@ export class AppService {
   }
 
   async hasDriverStandingsPerYear(year: number): Promise<boolean> {
-    const driverStandingRepository = await this.driverStandingsService.findByYear(year);
-    if (driverStandingRepository.length > 0) {
-      return true;
-    }
-    return false;
+    const driverStandingRepository =
+      await this.driverStandingsService.findByYear(year);
+    return driverStandingRepository && driverStandingRepository.length > 0;
   }
-  
 }

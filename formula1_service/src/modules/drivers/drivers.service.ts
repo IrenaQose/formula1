@@ -10,7 +10,6 @@ import { Driver } from './entities/driver.entity';
 import { ErgastResponse } from './interfaces/driver.interface';
 import { RetryService } from '../../utils/retry.service';
 
-
 @Injectable()
 export class DriversService {
   private readonly logger = new Logger(DriversService.name);
@@ -32,19 +31,21 @@ export class DriversService {
 
       for (const driverData of drivers) {
         let driver = await this.driverRepository.findOne({
-          where: { driver_ref: driverData.driverId }
+          where: { driver_ref: driverData.driverId },
         });
 
         if (!driver) {
           driver = this.driverRepository.create({
             driver_ref: driverData.driverId,
-            permanent_number: driverData.permanentNumber ? parseInt(driverData.permanentNumber) : undefined,
+            permanent_number: driverData.permanentNumber
+              ? parseInt(driverData.permanentNumber)
+              : undefined,
             first_name: driverData.givenName,
             last_name: driverData.familyName,
             birth_date: new Date(driverData.dateOfBirth),
             nationality: driverData.nationality,
           } as Driver);
-          
+
           await this.driverRepository.save(driver);
           this.logger.log(`Created and saved driver: ${driver.first_name} ${driver.last_name}`);
         } else {
@@ -61,9 +62,9 @@ export class DriversService {
 
   async findAll(): Promise<Driver[]> {
     const data = await this.driverRepository.find({
-      order: { last_name: 'ASC', first_name: 'ASC' }
+      order: { last_name: 'ASC', first_name: 'ASC' },
     });
 
     return data;
   }
-} 
+}

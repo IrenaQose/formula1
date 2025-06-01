@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { Result } from '../../results/entities/result.entity';
 
 @Entity('drivers')
@@ -32,4 +39,4 @@ export class Driver {
 
   @UpdateDateColumn()
   updated_at: Date;
-} 
+}

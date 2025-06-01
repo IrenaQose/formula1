@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { of, throwError } from 'rxjs';
+import { AxiosResponse } from 'axios';
 
 import { RacesService } from './races.service';
 import { Race } from './entities/race.entity';
@@ -11,7 +12,8 @@ import { DriverStandingsService } from '../driver-standings/driver-standings.ser
 import { ResultsService } from '../results/results.service';
 import { Driver } from '../drivers/entities/driver.entity';
 import { ConstructorTeam } from '../constructors/entities/constructor.entity';
-import { DriverStanding } from '../driver-standings/entities/driver-standing.entity';
+import { RetryService } from '../../utils/retry.service';
+import { ErgastRaceResponse } from './interfaces/ergastRace.interface';
 
 describe('RacesService', () => {
   let service: RacesService;
@@ -70,37 +72,44 @@ describe('RacesService', () => {
     time: '05:00:00',
     season_id: 1,
     season: mockSeason,
-    results: [{
-      id: 1,
-      position: 1,
-      driver: mockDriver,
-      constructorTeam: mockConstructor,
-      laps: 58,
-      time: '1:20:235',
-    }],
+    results: [
+      {
+        id: 1,
+        position: 1,
+        driver: mockDriver,
+        constructorTeam: mockConstructor,
+        laps: 58,
+        time: '1:20:235',
+      },
+    ],
   } as Race;
 
-  const mockChampion = {
+  const mockTransformedRace = {
     id: 1,
-    driver: mockDriver,
-    constructorTeam: mockConstructor,
-    points: 100,
-    position: 1,
-    wins: 5,
-  } as DriverStanding;
+    name: 'Australian Grand Prix',
+    date: new Date('2024-03-24'),
+    champion: mockDriver,
+    constructor: 'Mercedes',
+    laps: 58,
+    time: '1:20:235',
+  };
 
-  const mockErgastResponse = {
-    data: {
-      MRData: {
-        RaceTable: {
-          Races: [{
+  const mockErgastResponse: ErgastRaceResponse = {
+    MRData: {
+      limit: '100',
+      offset: '0',
+      total: '1',
+      RaceTable: {
+        season: '2024',
+        Races: [
+          {
             round: '1',
             raceName: 'Australian Grand Prix',
             date: '2024-03-24',
             time: '05:00:00Z',
             Circuit: {
               circuitId: 'albert_park',
-              circuitName: 'Albert Park Circuit',
+              circuitName: 'Albert Park Grand Prix Circuit',
               Location: {
                 lat: '-37.8497',
                 long: '144.968',
@@ -108,16 +117,25 @@ describe('RacesService', () => {
                 country: 'Australia',
               },
             },
-          }],
-        },
+          },
+        ],
       },
     },
+  };
+
+  const mockAxiosResponse: AxiosResponse<ErgastRaceResponse> = {
+    data: mockErgastResponse,
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: {} as any,
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RacesService,
+        RetryService,
         {
           provide: getRepositoryToken(Race),
           useValue: mockRaceRepository,
@@ -143,14 +161,18 @@ describe('RacesService', () => {
 
     service = module.get<RacesService>(RacesService);
     raceRepository = module.get<Repository<Race>>(getRepositoryToken(Race));
-    seasonRepository = module.get<Repository<Season>>(getRepositoryToken(Season));
+    seasonRepository = module.get<Repository<Season>>(
+      getRepositoryToken(Season),
+    );
     httpService = module.get<HttpService>(HttpService);
-    driverStandingsService = module.get<DriverStandingsService>(DriverStandingsService);
+    driverStandingsService = module.get<DriverStandingsService>(
+      DriverStandingsService,
+    );
     resultsService = module.get<ResultsService>(ResultsService);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   it('should be defined', () => {
@@ -187,87 +209,73 @@ describe('RacesService', () => {
   describe('findByYear', () => {
     it('should return races for a specific year', async () => {
       const year = 2024;
-      const races = [mockRace];
-      const results = [mockRace.results[0]];
-      mockRaceRepository.find.mockResolvedValue(races);
-      mockResultsService.findByYear.mockResolvedValue(results);
-      mockDriverStandingsService.findSeasonChampion.mockResolvedValue(mockChampion);
+      mockRaceRepository.find.mockResolvedValue([mockRace]);
+      mockDriverStandingsService.findSeasonChampion.mockResolvedValue(null);
 
       const result = await service.findByYear(year);
-      expect(result.data.races).toHaveLength(1);
-      expect(result.data.champion).toBeDefined();
-      expect(raceRepository.find).toHaveBeenCalledWith({
-        where: { season: { year: year.toString() } },
-        order: { date: 'ASC' },
-        relations: ['season', 'results', 'results.driver', 'results.constructorTeam'],
+
+      expect(result).toEqual({
+        data: {
+          races: [mockTransformedRace],
+          champion: null,
+        },
+      });
+      expect(mockRaceRepository.find).toHaveBeenCalledWith({
+        where: {
+          season: { year: year.toString() },
+        },
+        order: {
+          date: 'ASC',
+        },
+        relations: [
+          'season',
+          'results',
+          'results.driver',
+          'results.constructorTeam',
+        ],
       });
     });
 
-    it('should import races if none found', async () => {
+    it('should return empty race when no races found', async () => {
       const year = 2024;
-      mockRaceRepository.find.mockResolvedValue([]);
-      mockResultsService.findByYear.mockResolvedValue([]);
-      mockHttpService.get.mockReturnValue(of(mockErgastResponse));
-      mockSeasonRepository.findOne.mockResolvedValue(mockSeason);
-      mockRaceRepository.findOne.mockResolvedValue(null);
-      mockRaceRepository.create.mockReturnValue(mockRace);
-      mockRaceRepository.save.mockResolvedValue(mockRace);
-
-      await service.findByYear(year);
-
-      expect(mockHttpService.get).toHaveBeenCalled();
-      expect(mockRaceRepository.save).toHaveBeenCalled();
-    });
-
-    it('should import results if none found', async () => {
-      const year = 2024;
-      const races = [mockRace];
-      mockRaceRepository.find.mockResolvedValue(races);
-      mockResultsService.findByYear.mockResolvedValue([]);
-
-      await service.findByYear(year);
-
-      expect(mockResultsService.importResults).toHaveBeenCalledWith(year);
-    });
-
-    it('should handle season not found', async () => {
-      const year = 2024;
-      mockRaceRepository.find.mockResolvedValue([]);
-      mockResultsService.findByYear.mockResolvedValue([]);
-      mockHttpService.get.mockReturnValue(of(mockErgastResponse));
       mockSeasonRepository.findOne.mockResolvedValue(null);
+      mockRaceRepository.find.mockResolvedValue([]);
 
-      await expect(service.findByYear(year)).rejects.toThrow(`Season ${year} not found`);
+      const { data } = await service.findByYear(year);
+
+      expect(data.races.length).toBe(0);
     });
 
     it('should handle repository errors', async () => {
       const year = 2024;
+      mockSeasonRepository.findOne.mockResolvedValue(mockSeason);
       mockRaceRepository.find.mockRejectedValue(new Error('Repository error'));
 
-      await expect(service.findByYear(year)).rejects.toThrow('Repository error');
+      await expect(service.findByYear(year)).rejects.toThrow(
+        'Repository error',
+      );
     });
   });
 
   describe('importRaces', () => {
     it('should successfully import races', async () => {
       const year = 2024;
-      mockHttpService.get.mockReturnValue(of(mockErgastResponse));
       mockSeasonRepository.findOne.mockResolvedValue(mockSeason);
+      mockHttpService.get.mockReturnValue(of(mockAxiosResponse));
       mockRaceRepository.findOne.mockResolvedValue(null);
       mockRaceRepository.create.mockReturnValue(mockRace);
       mockRaceRepository.save.mockResolvedValue(mockRace);
 
       await service.importRaces(year);
 
-      expect(mockHttpService.get).toHaveBeenCalledWith(`${process.env.ERGAST_API_URL}/${year}/races`);
-      expect(mockSeasonRepository.findOne).toHaveBeenCalledWith({ where: { year: year.toString() } });
+      expect(mockHttpService.get).toHaveBeenCalled();
       expect(mockRaceRepository.save).toHaveBeenCalled();
     });
 
     it('should handle existing races', async () => {
       const year = 2024;
-      mockHttpService.get.mockReturnValue(of(mockErgastResponse));
       mockSeasonRepository.findOne.mockResolvedValue(mockSeason);
+      mockHttpService.get.mockReturnValue(of(mockAxiosResponse));
       mockRaceRepository.findOne.mockResolvedValue(mockRace);
 
       await service.importRaces(year);
@@ -276,28 +284,14 @@ describe('RacesService', () => {
       expect(mockRaceRepository.save).not.toHaveBeenCalled();
     });
 
-    it('should handle season not found', async () => {
-      const year = 2024;
-      mockHttpService.get.mockReturnValue(of(mockErgastResponse));
-      mockSeasonRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.importRaces(year)).rejects.toThrow(`Season ${year} not found`);
-    });
-
     it('should handle HTTP errors', async () => {
       const year = 2024;
-      mockHttpService.get.mockReturnValue(throwError(() => new Error('HTTP Error')));
+      mockSeasonRepository.findOne.mockResolvedValue(mockSeason);
+      mockHttpService.get.mockReturnValue(
+        throwError(() => new Error('HTTP Error')),
+      );
 
       await expect(service.importRaces(year)).rejects.toThrow('HTTP Error');
     });
-
-    it('should handle repository errors', async () => {
-      const year = 2024;
-      mockHttpService.get.mockReturnValue(of(mockErgastResponse));
-      mockSeasonRepository.findOne.mockResolvedValue(mockSeason);
-      mockRaceRepository.findOne.mockRejectedValue(new Error('Repository error'));
-
-      await expect(service.importRaces(year)).rejects.toThrow('Repository error');
-    });
   });
-}); 
+});

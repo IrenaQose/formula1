@@ -12,12 +12,16 @@ export class DriversController {
 
   @Post('import/:year')
   async importDrivers(
-    @Param('year', new ParseIntPipe({ 
-      errorHttpStatusCode: 400,
-      exceptionFactory: () => new BadRequestException('Year must be a valid number')
-    })) year: number,
+    @Param(
+      'year',
+      new ParseIntPipe({
+        errorHttpStatusCode: 400,
+        exceptionFactory: () => new BadRequestException('Year must be a valid number'),
+      }),
+    )
+    year: number,
   ) {
     await this.driversService.importDrivers(year);
     return { message: `Drivers for ${year} imported successfully` };
   }
-} 
+}

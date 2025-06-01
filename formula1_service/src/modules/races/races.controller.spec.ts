@@ -16,7 +16,12 @@ describe('RacesController', () => {
     date: new Date('2024-03-24'),
     time: '05:00:00',
     season_id: 1,
-    season: { id: 1, year: '2024' } as any,
+    season: {
+      id: 1,
+      year: '2024',
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
     results: [],
     created_at: new Date(),
     updated_at: new Date(),
@@ -44,21 +49,36 @@ describe('RacesController', () => {
     position: 1,
     wins: 5,
     driver: mockDriver,
-    constructorTeam: { id: 1, name: 'Mercedes' } as any,
-    season: { id: 1, year: '2024' } as any,
+    constructorTeam: {
+      id: 1,
+      name: 'Mercedes',
+      constructor_ref: '',
+      results: [],
+      nationality: '',
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    season: {
+      id: 1,
+      year: '2024',
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
     created_at: new Date(),
     updated_at: new Date(),
   };
 
   const mockRacesResponse: RacesResponse = {
-    races: [{
-      name: 'Australian Grand Prix',
-      date: new Date('2024-03-24'),
-      champion: mockDriver,
-      constructor: 'Mercedes',
-      laps: 58,
-      time: '1:20:235',
-    }],
+    races: [
+      {
+        name: 'Australian Grand Prix',
+        date: new Date('2024-03-24'),
+        champion: mockDriver,
+        constructor: 'Mercedes',
+        laps: 58,
+        time: '1:20:235',
+      },
+    ],
     champion: mockChampion,
   };
 
@@ -127,7 +147,9 @@ describe('RacesController', () => {
       const error = new Error('Database error');
       mockRacesService.findByYear.mockRejectedValue(error);
 
-      await expect(controller.findByYear(year)).rejects.toThrow('Database error');
+      await expect(controller.findByYear(year)).rejects.toThrow(
+        'Database error',
+      );
     });
   });
 
@@ -138,7 +160,9 @@ describe('RacesController', () => {
 
       const result = await controller.importRaces(year);
 
-      expect(result).toEqual({ message: `Races for ${year} imported successfully` });
+      expect(result).toEqual({
+        message: `Races for ${year} imported successfully`,
+      });
       expect(mockRacesService.importRaces).toHaveBeenCalledWith(year);
     });
 
@@ -147,7 +171,9 @@ describe('RacesController', () => {
       const error = new Error('Import error');
       mockRacesService.importRaces.mockRejectedValue(error);
 
-      await expect(controller.importRaces(year)).rejects.toThrow('Import error');
+      await expect(controller.importRaces(year)).rejects.toThrow(
+        'Import error',
+      );
     });
   });
-}); 
+});

@@ -1,37 +1,22 @@
-export interface SeasonRaceResult {
-  raceId: number;
-  raceName: string;
-  date: Date;
-  winner: {
-    driverId: number;
-    driverRef: string;
-    firstName: string;
-    lastName: string;
-    constructor: string;
-    points: number;
-  } | null;
-}
+import { Driver } from '../../drivers/entities/driver.entity';
+import { ConstructorTeam } from '../../constructors/entities/constructor.entity';
 
 export interface SeasonResponse {
   id: number;
   year: string;
-  races: SeasonRaceResult[];
   champion: {
-    driverId: number;
-    driverRef: string;
-    firstName: string;
-    lastName: string;
+    id: number;
+    driver_id: number;
+    season_id: number;
+    constructor_team_id: number;
     points: number;
+    position: number;
     wins: number;
+    driver: Driver;
+    constructorTeam: ConstructorTeam;
   } | null;
 }
 
 export interface SeasonsResponse {
   seasons: SeasonResponse[];
-  total: number;
-} 
-
-export interface SeasonChampionsResponse {
-  seasons: SeasonResponse[];
-  total: number;
-} 
+}

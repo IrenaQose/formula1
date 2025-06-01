@@ -31,7 +31,7 @@ describe('DriversController', () => {
         {
           provide: DriversService,
           useValue: mockDriversService,
-        }
+        },
       ],
     }).compile();
 
@@ -96,4 +96,4 @@ describe('DriversController', () => {
       expect(mockDriversService.findAll).toHaveBeenCalled();
     });
   });
-}); 
+});

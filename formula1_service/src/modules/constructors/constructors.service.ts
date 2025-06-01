@@ -43,7 +43,7 @@ export class ConstructorsService {
       for (const constructorData of constructors) {
         // Find or create constructor
         let constructor = await this.constructorRepository.findOne({
-          where: { constructor_ref: constructorData.constructorId }
+          where: { constructor_ref: constructorData.constructorId },
         });
 
         if (!constructor) {
@@ -69,4 +69,4 @@ export class ConstructorsService {
   async findAll(): Promise<ConstructorTeam[]> {
     return this.constructorRepository.find();
   }
-} 
+}

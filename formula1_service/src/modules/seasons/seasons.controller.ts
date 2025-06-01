@@ -15,13 +15,15 @@ export class SeasonsController {
 
   @Get('results')
   async getSeasonsChampions(
-    @Query('startYear', new ParseIntPipe({ optional: true })) startYear?: number,
+    @Query('startYear', new ParseIntPipe({ optional: true }))
+    startYear?: number,
     @Query('endYear', new ParseIntPipe({ optional: true })) endYear?: number,
-    @Query(YearRangeValidationPipe) yearRange: YearRange = { startYear, endYear }
+    @Query(YearRangeValidationPipe)
+    yearRange: YearRange = { startYear, endYear },
   ): Promise<SeasonsResponse> {
     return this.seasonsService.findSeasonChampions(
       yearRange.startYear,
-      yearRange.endYear
+      yearRange.endYear,
     );
   }
-} 
+}

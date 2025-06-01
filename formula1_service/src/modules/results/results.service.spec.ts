@@ -12,6 +12,7 @@ import { Race } from '../races/entities/race.entity';
 import { Driver } from '../drivers/entities/driver.entity';
 import { ConstructorTeam } from '../constructors/entities/constructor.entity';
 import { ErgastResultsResponse } from './interfaces/ergastResults.interface';
+import { RetryService } from '../../utils/retry.service';
 
 describe('ResultsService', () => {
   let service: ResultsService;
@@ -72,37 +73,41 @@ describe('ResultsService', () => {
       offset: '0',
       total: '1',
       RaceTable: {
-        Races: [{
-          season: '2024',
-          round: '1',
-          raceName: 'Australian Grand Prix',
-          date: '2024-03-24',
-          time: '05:00:00Z',
-          Results: [{
-            number: '44',
-            position: '1',
-            points: '25',
-            Driver: {
-              driverId: 'hamilton',
-              permanentNumber: '44',
-              givenName: 'Lewis',
-              familyName: 'Hamilton',
-              dateOfBirth: '1985-01-07',
-              nationality: 'British',
-            },
-            Constructor: {
-              constructorId: 'mercedes',
-              name: 'Mercedes',
-              nationality: 'German',
-            },
-            grid: '1',
-            laps: '58',
-            status: 'Finished',
-            Time: {
-              time: '1:30:00.000',
-            },
-          }],
-        }],
+        Races: [
+          {
+            season: '2024',
+            round: '1',
+            raceName: 'Australian Grand Prix',
+            date: '2024-03-24',
+            time: '05:00:00Z',
+            Results: [
+              {
+                number: '44',
+                position: '1',
+                points: '25',
+                Driver: {
+                  driverId: 'hamilton',
+                  permanentNumber: '44',
+                  givenName: 'Lewis',
+                  familyName: 'Hamilton',
+                  dateOfBirth: '1985-01-07',
+                  nationality: 'British',
+                },
+                Constructor: {
+                  constructorId: 'mercedes',
+                  name: 'Mercedes',
+                  nationality: 'German',
+                },
+                grid: '1',
+                laps: '58',
+                status: 'Finished',
+                Time: {
+                  time: '1:30:00.000',
+                },
+              },
+            ],
+          },
+        ],
       },
     },
   };
@@ -119,6 +124,7 @@ describe('ResultsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ResultsService,
+        RetryService,
         {
           provide: getRepositoryToken(Result),
           useValue: {
@@ -167,7 +173,9 @@ describe('ResultsService', () => {
     seasonRepository = module.get<Repository<Season>>(getRepositoryToken(Season));
     raceRepository = module.get<Repository<Race>>(getRepositoryToken(Race));
     driverRepository = module.get<Repository<Driver>>(getRepositoryToken(Driver));
-    constructorRepository = module.get<Repository<ConstructorTeam>>(getRepositoryToken(ConstructorTeam));
+    constructorRepository = module.get<Repository<ConstructorTeam>>(
+      getRepositoryToken(ConstructorTeam),
+    );
     httpService = module.get<HttpService>(HttpService);
   });
 
@@ -271,6 +279,10 @@ describe('ResultsService', () => {
   });
 
   describe('importResults', () => {
+    beforeEach(() => {
+      jest.spyOn(service, 'findByYear').mockResolvedValue([]);
+    });
+
     it('should successfully import results', async () => {
       jest.spyOn(seasonRepository, 'findOne').mockResolvedValue(mockSeason);
       jest.spyOn(raceRepository, 'findOne').mockResolvedValue(mockRace);
@@ -307,6 +319,7 @@ describe('ResultsService', () => {
     });
 
     it('should throw error if season not found', async () => {
+      jest.spyOn(service, 'findByYear').mockResolvedValue([]);
       jest.spyOn(seasonRepository, 'findOne').mockResolvedValue(null);
       jest.spyOn(httpService, 'get').mockReturnValue(of(mockAxiosResponse));
 
@@ -314,14 +327,18 @@ describe('ResultsService', () => {
     });
 
     it('should throw error if race not found', async () => {
+      jest.spyOn(service, 'findByYear').mockResolvedValue([]);
       jest.spyOn(seasonRepository, 'findOne').mockResolvedValue(mockSeason);
       jest.spyOn(raceRepository, 'findOne').mockResolvedValue(null);
       jest.spyOn(httpService, 'get').mockReturnValue(of(mockAxiosResponse));
 
-      await expect(service.importResults(2024)).rejects.toThrow('Race Australian Grand Prix not found');
+      await expect(service.importResults(2024)).rejects.toThrow(
+        'Race Australian Grand Prix not found',
+      );
     });
 
     it('should throw error if driver not found', async () => {
+      jest.spyOn(service, 'findByYear').mockResolvedValue([]);
       jest.spyOn(seasonRepository, 'findOne').mockResolvedValue(mockSeason);
       jest.spyOn(raceRepository, 'findOne').mockResolvedValue(mockRace);
       jest.spyOn(driverRepository, 'findOne').mockResolvedValue(null);
@@ -331,6 +348,7 @@ describe('ResultsService', () => {
     });
 
     it('should throw error if constructor not found', async () => {
+      jest.spyOn(service, 'findByYear').mockResolvedValue([]);
       jest.spyOn(seasonRepository, 'findOne').mockResolvedValue(mockSeason);
       jest.spyOn(raceRepository, 'findOne').mockResolvedValue(mockRace);
       jest.spyOn(driverRepository, 'findOne').mockResolvedValue(mockDriver);
@@ -341,12 +359,14 @@ describe('ResultsService', () => {
     });
 
     it('should handle API errors', async () => {
+      jest.spyOn(service, 'findByYear').mockResolvedValue([]);
       jest.spyOn(httpService, 'get').mockReturnValue(throwError(() => new Error('API Error')));
 
       await expect(service.importResults(2024)).rejects.toThrow('API Error');
     });
 
     it('should not create duplicate results', async () => {
+      jest.spyOn(service, 'findByYear').mockResolvedValue([mockResult]);
       jest.spyOn(seasonRepository, 'findOne').mockResolvedValue(mockSeason);
       jest.spyOn(raceRepository, 'findOne').mockResolvedValue(mockRace);
       jest.spyOn(driverRepository, 'findOne').mockResolvedValue(mockDriver);
@@ -360,4 +380,4 @@ describe('ResultsService', () => {
       expect(resultRepository.save).not.toHaveBeenCalled();
     });
   });
-}); 
+});

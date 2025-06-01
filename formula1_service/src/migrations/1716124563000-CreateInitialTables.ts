@@ -1,11 +1,11 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateInitialTables1716124563000 implements MigrationInterface {
-    name = 'CreateInitialTables1716124563000'
+  name = 'CreateInitialTables1716124563000';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // Create seasons table
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Create seasons table
+    await queryRunner.query(`
             CREATE TABLE IF NOT EXISTS "seasons" (
                 "id" SERIAL NOT NULL,
                 "year" integer NOT NULL,
@@ -16,8 +16,8 @@ export class CreateInitialTables1716124563000 implements MigrationInterface {
             )
         `);
 
-        // Create constructors table
-        await queryRunner.query(`
+    // Create constructors table
+    await queryRunner.query(`
             CREATE TABLE IF NOT EXISTS "constructors" (
                 "id" SERIAL NOT NULL,
                 "constructor_ref" character varying NOT NULL,
@@ -30,8 +30,8 @@ export class CreateInitialTables1716124563000 implements MigrationInterface {
             )
         `);
 
-        // Create drivers table
-        await queryRunner.query(`
+    // Create drivers table
+    await queryRunner.query(`
             CREATE TABLE IF NOT EXISTS "drivers" (
                 "id" SERIAL NOT NULL,
                 "driver_ref" character varying NOT NULL,
@@ -47,8 +47,8 @@ export class CreateInitialTables1716124563000 implements MigrationInterface {
             )
         `);
 
-        // Create races table
-        await queryRunner.query(`
+    // Create races table
+    await queryRunner.query(`
             CREATE TABLE IF NOT EXISTS "races" (
                 "id" SERIAL NOT NULL,
                 "name" character varying NOT NULL,
@@ -62,8 +62,8 @@ export class CreateInitialTables1716124563000 implements MigrationInterface {
             )
         `);
 
-        // Create results table
-        await queryRunner.query(`
+    // Create results table
+    await queryRunner.query(`
             CREATE TABLE IF NOT EXISTS "results" (
                 "id" SERIAL NOT NULL,
                 "points" double precision NOT NULL,
@@ -87,7 +87,7 @@ export class CreateInitialTables1716124563000 implements MigrationInterface {
             )
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE TABLE IF NOT EXISTS "driver_standings" (
                 "id" SERIAL NOT NULL,
                 "driver_id" integer NOT NULL,
@@ -106,28 +106,38 @@ export class CreateInitialTables1716124563000 implements MigrationInterface {
             )
         `);
 
-        // Create indexes
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_races_season_id" ON "races" ("season_id")`);
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_results_season_id" ON "results" ("season_id")`);
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_results_driver_id" ON "results" ("driver_id")`);
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_results_race_id" ON "results" ("race_id")`);
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_results_constructor_id" ON "results" ("constructor_id")`);
-    }
+    // Create indexes
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "IDX_races_season_id" ON "races" ("season_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "IDX_results_season_id" ON "results" ("season_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "IDX_results_driver_id" ON "results" ("driver_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "IDX_results_race_id" ON "results" ("race_id")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "IDX_results_constructor_id" ON "results" ("constructor_id")`,
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        // Drop indexes
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_results_constructor_id"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_results_race_id"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_results_driver_id"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_results_season_id"`);
-        await queryRunner.query(`DROP INDEX IF EXISTS "IDX_races_season_id"`);
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Drop indexes
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_results_constructor_id"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_results_race_id"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_results_driver_id"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_results_season_id"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_races_season_id"`);
 
-        // Drop tables
-        await queryRunner.query(`DROP TABLE IF EXISTS "results"`);
-        await queryRunner.query(`DROP TABLE IF EXISTS "races"`);
-        await queryRunner.query(`DROP TABLE IF EXISTS "drivers"`);
-        await queryRunner.query(`DROP TABLE IF EXISTS "constructors"`);
-        await queryRunner.query(`DROP TABLE IF EXISTS "seasons"`);
-        await queryRunner.query(`DROP TABLE IF EXISTS "driver_standings"`);
-    }
-} 
+    // Drop tables
+    await queryRunner.query(`DROP TABLE IF EXISTS "results"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "races"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "drivers"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "constructors"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "seasons"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "driver_standings"`);
+  }
+}

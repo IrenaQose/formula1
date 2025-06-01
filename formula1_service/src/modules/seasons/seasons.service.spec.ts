@@ -1,12 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
+import { HttpService } from '@nestjs/axios';
 import { SeasonsService } from './seasons.service';
 import { Season } from './entities/season.entity';
 import { DriverStanding } from '../driver-standings/entities/driver-standing.entity';
 import { Driver } from '../drivers/entities/driver.entity';
 import { ConstructorTeam } from '../constructors/entities/constructor.entity';
 import { DriverStandingsService } from '../driver-standings/driver-standings.service';
+import { RetryService } from '../../utils/retry.service';
 
 describe('SeasonsService', () => {
   let service: SeasonsService;
@@ -16,8 +18,8 @@ describe('SeasonsService', () => {
   const mockSeason = {
     id: 1,
     year: '2024',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    created_at: new Date(),
+    updated_at: new Date(),
   } as Season;
 
   const mockDriver = {
@@ -57,6 +59,13 @@ describe('SeasonsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SeasonsService,
+        RetryService,
+        {
+          provide: HttpService,
+          useValue: {
+            get: jest.fn(),
+          },
+        },
         {
           provide: getRepositoryToken(Season),
           useValue: {
@@ -74,8 +83,12 @@ describe('SeasonsService', () => {
     }).compile();
 
     service = module.get<SeasonsService>(SeasonsService);
-    seasonRepository = module.get<Repository<Season>>(getRepositoryToken(Season));
-    driverStandingsService = module.get<DriverStandingsService>(DriverStandingsService);
+    seasonRepository = module.get<Repository<Season>>(
+      getRepositoryToken(Season),
+    );
+    driverStandingsService = module.get<DriverStandingsService>(
+      DriverStandingsService,
+    );
   });
 
   afterEach(() => {
@@ -109,12 +122,11 @@ describe('SeasonsService', () => {
     });
 
     it('should handle repository errors', async () => {
-      jest.spyOn(seasonRepository, 'find')
+      jest
+        .spyOn(seasonRepository, 'find')
         .mockRejectedValue(new Error('Repository error'));
 
-      await expect(service.findAll())
-        .rejects
-        .toThrow('Repository error');
+      await expect(service.findAll()).rejects.toThrow('Repository error');
     });
   });
 
@@ -126,7 +138,8 @@ describe('SeasonsService', () => {
       };
 
       jest.spyOn(seasonRepository, 'find').mockResolvedValue(seasons);
-      jest.spyOn(driverStandingsService, 'findSeasonChampion')
+      jest
+        .spyOn(driverStandingsService, 'findSeasonChampion')
         .mockResolvedValue(mockChampionStanding);
 
       const result = await service.findSeasonChampions();
@@ -137,8 +150,9 @@ describe('SeasonsService', () => {
         },
         order: { year: 'DESC' },
       });
-      expect(driverStandingsService.findSeasonChampion)
-        .toHaveBeenCalledWith(parseInt(mockSeason.year));
+      expect(driverStandingsService.findSeasonChampion).toHaveBeenCalledWith(
+        parseInt(mockSeason.year),
+      );
     });
 
     it('should return seasons with champions using custom year range', async () => {
@@ -148,7 +162,8 @@ describe('SeasonsService', () => {
       };
 
       jest.spyOn(seasonRepository, 'find').mockResolvedValue(seasons);
-      jest.spyOn(driverStandingsService, 'findSeasonChampion')
+      jest
+        .spyOn(driverStandingsService, 'findSeasonChampion')
         .mockResolvedValue(mockChampionStanding);
 
       const result = await service.findSeasonChampions(2020, 2024);
@@ -159,8 +174,9 @@ describe('SeasonsService', () => {
         },
         order: { year: 'DESC' },
       });
-      expect(driverStandingsService.findSeasonChampion)
-        .toHaveBeenCalledWith(parseInt(mockSeason.year));
+      expect(driverStandingsService.findSeasonChampion).toHaveBeenCalledWith(
+        parseInt(mockSeason.year),
+      );
     });
 
     it('should handle seasons without champions', async () => {
@@ -170,7 +186,8 @@ describe('SeasonsService', () => {
       };
 
       jest.spyOn(seasonRepository, 'find').mockResolvedValue(seasons);
-      jest.spyOn(driverStandingsService, 'findSeasonChampion')
+      jest
+        .spyOn(driverStandingsService, 'findSeasonChampion')
         .mockResolvedValue(null);
 
       const result = await service.findSeasonChampions(2020, 2024);
@@ -181,8 +198,9 @@ describe('SeasonsService', () => {
         },
         order: { year: 'DESC' },
       });
-      expect(driverStandingsService.findSeasonChampion)
-        .toHaveBeenCalledWith(parseInt(mockSeason.year));
+      expect(driverStandingsService.findSeasonChampion).toHaveBeenCalledWith(
+        parseInt(mockSeason.year),
+      );
     });
 
     it('should handle empty seasons array', async () => {
@@ -204,23 +222,25 @@ describe('SeasonsService', () => {
     });
 
     it('should handle repository errors', async () => {
-      jest.spyOn(seasonRepository, 'find')
+      jest
+        .spyOn(seasonRepository, 'find')
         .mockRejectedValue(new Error('Repository error'));
 
-      await expect(service.findSeasonChampions(2020, 2024))
-        .rejects
-        .toThrow('Repository error');
+      await expect(service.findSeasonChampions(2020, 2024)).rejects.toThrow(
+        'Repository error',
+      );
     });
 
     it('should handle driver standings service errors', async () => {
       const seasons = [mockSeason];
       jest.spyOn(seasonRepository, 'find').mockResolvedValue(seasons);
-      jest.spyOn(driverStandingsService, 'findSeasonChampion')
+      jest
+        .spyOn(driverStandingsService, 'findSeasonChampion')
         .mockRejectedValue(new Error('Driver standings service error'));
 
-      await expect(service.findSeasonChampions(2020, 2024))
-        .rejects
-        .toThrow('Driver standings service error');
+      await expect(service.findSeasonChampions(2020, 2024)).rejects.toThrow(
+        'Driver standings service error',
+      );
     });
   });
 });

@@ -6,7 +6,6 @@ import { Season } from '../seasons/entities/season.entity';
 import { RacesService } from './races.service';
 import { RacesController } from './races.controller';
 import { DriverStandingsModule } from '../driver-standings/driver-standings.module';
-import { ResultsModule } from '../results/results.module';
 import { RetryService } from '../../utils/retry.service';
 
 @Module({
@@ -14,10 +13,9 @@ import { RetryService } from '../../utils/retry.service';
     TypeOrmModule.forFeature([Race, Season]),
     HttpModule,
     DriverStandingsModule,
-    ResultsModule
   ],
   controllers: [RacesController],
   providers: [RacesService, RetryService],
-  exports: [RacesService]
+  exports: [RacesService],
 })
-export class RacesModule {} 
+export class RacesModule {}

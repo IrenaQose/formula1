@@ -8,7 +8,7 @@ import { ErgastStandingsResponse } from './interfaces/driver-standing.interface'
 import { Driver } from '../drivers/entities/driver.entity';
 import { Season } from '../seasons/entities/season.entity';
 import { ConstructorTeam } from '../constructors/entities/constructor.entity';
-import { RetryService } from 'src/utils/retry.service';
+import { RetryService } from '../../utils/retry.service';
 
 @Injectable()
 export class DriverStandingsService {
@@ -39,17 +39,16 @@ export class DriverStandingsService {
       }
 
       const season = await this.seasonRepository.findOne({
-        where: { year: year.toString() }
+        where: { year: year.toString() },
       });
 
       if (!season) {
         throw new Error(`Season ${year} not found`);
       }
 
-
       for (const standingData of standingsList.DriverStandings) {
         const driver = await this.driverRepository.findOne({
-          where: { driver_ref: standingData.Driver.driverId }
+          where: { driver_ref: standingData.Driver.driverId },
         });
 
         if (!driver) {
@@ -61,19 +60,21 @@ export class DriverStandingsService {
           where: {
             constructor_ref: standingData.Constructors[0].constructorId,
             name: standingData.Constructors[0].name,
-          }
-        })
-    
+          },
+        });
+
         if (!constructorTeam) {
-          this.logger.warn(`Constructor team not found: ${standingData.Constructors[0].constructorId}`);
+          this.logger.warn(
+            `Constructor team not found: ${standingData.Constructors[0].constructorId}`,
+          );
           continue;
         }
 
         let standing = await this.driverStandingRepository.findOne({
           where: {
             driver_id: driver.id,
-            season_id: season.id
-          }
+            season_id: season.id,
+          },
         });
 
         if (!standing) {
@@ -83,11 +84,13 @@ export class DriverStandingsService {
             constructor_team_id: constructorTeam.id,
             points: parseFloat(standingData.points),
             position: isNaN(parseInt(standingData.position)) ? 0 : parseInt(standingData.position),
-            wins: isNaN(parseInt(standingData.wins)) ? 0 : parseInt(standingData.wins)
+            wins: isNaN(parseInt(standingData.wins)) ? 0 : parseInt(standingData.wins),
           });
         } else {
           standing.points = parseFloat(standingData.points);
-          standing.position = isNaN(parseInt(standingData.position)) ? 0 : parseInt(standingData.position);
+          standing.position = isNaN(parseInt(standingData.position))
+            ? 0
+            : parseInt(standingData.position);
           standing.wins = isNaN(parseInt(standingData.wins)) ? 0 : parseInt(standingData.wins);
           standing.constructor_team_id = constructorTeam.id;
         }
@@ -106,7 +109,7 @@ export class DriverStandingsService {
   async findSeasonChampion(year: number): Promise<DriverStanding | null> {
     try {
       const season = await this.seasonRepository.findOne({
-        where: { year: year.toString() }
+        where: { year: year.toString() },
       });
 
       if (!season) {
@@ -117,23 +120,23 @@ export class DriverStandingsService {
       // Check if there are driver stangings for that season, if not, import them
       const driverStandings = await this.driverStandingRepository.find({
         where: {
-          season_id: season.id
-        }
+          season_id: season.id,
+        },
       });
-      
+
       if (driverStandings.length === 0) {
         await this.importDriverStandings(year);
       }
 
       const championStanding = await this.driverStandingRepository.findOne({
-        where: { 
+        where: {
           season_id: season.id,
-          position: 1
+          position: 1,
         },
         relations: ['driver', 'constructorTeam'],
-        order: { points: 'DESC' }
+        order: { points: 'DESC' },
       });
-   
+
       return championStanding || null;
     } catch (error) {
       this.logger.error(`Error finding season champion for ${year}:`, error);
@@ -144,7 +147,7 @@ export class DriverStandingsService {
   async findByYear(year: number): Promise<DriverStanding[]> {
     try {
       const season = await this.seasonRepository.findOne({
-        where: { year: year.toString() }
+        where: { year: year.toString() },
       });
 
       if (!season) {
@@ -155,16 +158,16 @@ export class DriverStandingsService {
       // Check if there are driver standings for that season, if not, import them
       const driverStandings = await this.driverStandingRepository.find({
         where: {
-          season_id: season.id
+          season_id: season.id,
         },
         relations: ['driver', 'constructorTeam', 'season'],
-        order: { position: 'ASC' }
+        order: { position: 'ASC' },
       });
-   
+
       return driverStandings;
     } catch (error) {
       this.logger.error(`Error finding driver standings for ${year}:`, error);
       throw error;
     }
   }
-} 
+}

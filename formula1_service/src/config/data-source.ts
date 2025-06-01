@@ -17,4 +17,4 @@ export default new DataSource({
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
   synchronize: false, // Always false for migrations
   logging: configService.get('NODE_ENV', 'development') === 'development',
-}); 
+});

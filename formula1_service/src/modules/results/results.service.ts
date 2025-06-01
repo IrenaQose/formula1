@@ -12,7 +12,6 @@ import { Race } from '../races/entities/race.entity';
 import { ErgastResultsResponse } from './interfaces/ergastResults.interface';
 import { RetryService } from '../../utils/retry.service';
 
-
 @Injectable()
 export class ResultsService {
   private readonly logger = new Logger(ResultsService.name);
@@ -33,7 +32,6 @@ export class ResultsService {
 
   async importResults(year: number, url?: string): Promise<void> {
     try {
-
       const existingResultsInDB = await this.findByYear(year.toString());
       if (existingResultsInDB.length > 0) {
         this.logger.log(`Results for ${year} already imported`);
@@ -44,7 +42,7 @@ export class ResultsService {
       this.logger.log(`Fetching results from ${apiUrl}`);
 
       const response = await this.retryService.makeRequestWithRetry<ErgastResultsResponse>(apiUrl);
-      
+
       const limit = parseInt(response.MRData.limit);
       const total = parseInt(response.MRData.total);
       const offset = parseInt(response.MRData.offset);
@@ -56,7 +54,7 @@ export class ResultsService {
 
       // Find season
       let season = await this.seasonRepository.findOne({ where: { year: year.toString() } });
-    
+
       if (!season) {
         throw new Error(`Season ${year} not found`);
       }
@@ -92,9 +90,9 @@ export class ResultsService {
           });
 
           if (!constructor) {
-            throw new Error(`Constructor ${constructor} not found`)
+            throw new Error(`Constructor ${constructor} not found`);
           }
-      
+
           // Create or update result
           const existingResult = await this.resultRepository.findOne({
             where: {
@@ -102,7 +100,7 @@ export class ResultsService {
               race_id: race.id,
             },
           });
-          
+
           if (!existingResult && resultData.position === '1') {
             const result = this.resultRepository.create({
               points: parseFloat(resultData.points),
@@ -118,16 +116,16 @@ export class ResultsService {
               season,
               driver,
               race,
-              constructorTeam: constructor
+              constructorTeam: constructor,
             } as Result);
             await this.resultRepository.save(result);
           }
         }
       }
 
-      if(total > nextOffset) {
+      if (total > nextOffset) {
         const nextUrl = `${env.ERGAST_API_URL}/${year}/results?limit=${limit}&offset=${nextOffset}`;
-        this.importResults(year, nextUrl)
+        this.importResults(year, nextUrl);
       }
 
       this.logger.log(`Successfully imported results for ${year}`);
@@ -137,40 +135,41 @@ export class ResultsService {
     }
   }
 
-  async findAll(page: number = 1, limit: number = 30): Promise<{ data: Result[]; total: number; page: number; limit: number }> {
+  async findAll(
+    page: number = 1,
+    limit: number = 30,
+  ): Promise<{ data: Result[]; total: number; page: number; limit: number }> {
     const [data, total] = await this.resultRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
-      order: { 
+      order: {
         season_id: 'DESC',
         race_id: 'ASC',
-        position: 'ASC'
+        position: 'ASC',
       },
-      relations: ['season', 'race', 'driver', 'constructorTeam']
+      relations: ['season', 'race', 'driver', 'constructorTeam'],
     });
 
     return {
       data,
       total,
       page,
-      limit
+      limit,
     };
   }
 
-  async findByYear(
-    year: string
-  ): Promise<Result[]> {
+  async findByYear(year: string): Promise<Result[]> {
     const data = await this.resultRepository.find({
       where: {
-        season: { year }
+        season: { year },
       },
-      order: { 
+      order: {
         race_id: 'ASC',
-        position: 'ASC'
+        position: 'ASC',
       },
-      relations: ['season', 'race', 'driver', 'constructorTeam']
+      relations: ['season', 'race', 'driver', 'constructorTeam'],
     });
 
-    return data
+    return data;
   }
 }
