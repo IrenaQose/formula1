@@ -1,9 +1,7 @@
 import { env } from 'process';
-import { firstValueFrom } from 'rxjs';
-import { Repository, DeepPartial } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Driver } from './entities/driver.entity';
@@ -24,7 +22,8 @@ export class DriversService {
     try {
       const url = `${env.ERGAST_API_URL}/${year}/drivers`;
 
-      const response = await this.retryService.makeRequestWithRetry<ErgastResponse>(url);
+      const response =
+        await this.retryService.makeRequestWithRetry<ErgastResponse>(url);
 
       const drivers = response.MRData.DriverTable.Drivers;
       this.logger.log(`Found ${drivers.length} drivers for ${year}`);
@@ -47,9 +46,13 @@ export class DriversService {
           } as Driver);
 
           await this.driverRepository.save(driver);
-          this.logger.log(`Created and saved driver: ${driver.first_name} ${driver.last_name}`);
+          this.logger.log(
+            `Created and saved driver: ${driver.first_name} ${driver.last_name}`,
+          );
         } else {
-          this.logger.log(`Driver already exists: ${driver.first_name} ${driver.last_name}`);
+          this.logger.log(
+            `Driver already exists: ${driver.first_name} ${driver.last_name}`,
+          );
         }
       }
 
@@ -61,10 +64,8 @@ export class DriversService {
   }
 
   async findAll(): Promise<Driver[]> {
-    const data = await this.driverRepository.find({
+    return await this.driverRepository.find({
       order: { last_name: 'ASC', first_name: 'ASC' },
     });
-
-    return data;
   }
 }

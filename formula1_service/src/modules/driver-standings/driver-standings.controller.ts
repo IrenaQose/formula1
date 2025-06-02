@@ -6,7 +6,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { DriverStandingsService } from './driver-standings.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('standings')
 @Controller({ path: 'driver-standings', version: '1' })
 export class DriverStandingsController {
   constructor(

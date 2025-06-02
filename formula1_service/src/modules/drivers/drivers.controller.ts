@@ -7,13 +7,22 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { DriversService } from './drivers.service';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Driver } from './entities/driver.entity';
 
+@ApiTags('drivers')
 @Controller({ path: 'drivers', version: '1' })
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}
 
   @Get()
-  async findAll() {
+  @ApiOperation({ summary: 'Get all drivers' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns all drivers',
+    type: [Driver],
+  })
+  async findAll(): Promise<Driver[]> {
     return this.driversService.findAll();
   }
 

@@ -66,6 +66,16 @@ This repository contains a Formula 1 application with three main components:
   - BE
   - FE
 
+
+## API Documentation
+
+The service includes interactive API documentation powered by Swagger. Once the service is running, you can access the documentation at:
+
+```
+http://localhost:3000/api
+```
+
+
 ⚙️ Backend Behavior
 On startup, the backend will:
 

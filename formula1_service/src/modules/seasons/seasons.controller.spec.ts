@@ -102,7 +102,10 @@ describe('SeasonsController', () => {
         .spyOn(service, 'findSeasonChampions')
         .mockResolvedValue(expectedResponse);
 
-      const result = await controller.getSeasonsChampions(2020, 2024);
+      const result = await controller.getSeasonsChampions({
+        startYear: 2020,
+        endYear: 2024,
+      });
       expect(result).toEqual(expectedResponse);
       expect(service.findSeasonChampions).toHaveBeenCalledWith(2020, 2024);
     });
@@ -115,7 +118,10 @@ describe('SeasonsController', () => {
         .spyOn(service, 'findSeasonChampions')
         .mockResolvedValue(expectedResponse);
 
-      const result = await controller.getSeasonsChampions(2020, 2024);
+      const result = await controller.getSeasonsChampions({
+        startYear: 2020,
+        endYear: 2024,
+      });
       expect(result).toEqual(expectedResponse);
       expect(service.findSeasonChampions).toHaveBeenCalledWith(2020, 2024);
     });
@@ -125,9 +131,9 @@ describe('SeasonsController', () => {
         .spyOn(service, 'findSeasonChampions')
         .mockRejectedValue(new Error('Service error'));
 
-      await expect(controller.getSeasonsChampions(2020, 2024)).rejects.toThrow(
-        'Service error',
-      );
+      await expect(
+        controller.getSeasonsChampions({ startYear: 2020, endYear: 2024 }),
+      ).rejects.toThrow('Service error');
     });
   });
 });

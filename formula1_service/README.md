@@ -1,3 +1,104 @@
+# Formula 1 Service
+
+A NestJS service that provides Formula 1 data, including seasons, races, drivers, constructors, and results.
+
+## Features
+
+- Fetches and stores Formula 1 data from the Ergast API
+- Provides RESTful endpoints for accessing Formula 1 data
+- Supports data import for specific seasons
+- Includes comprehensive API documentation via Swagger
+
+## Prerequisites
+
+- Node.js (v18 or later)
+- PostgreSQL (v12 or later)
+- npm or yarn
+
+## Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Copy the example environment file
+cp .env.example .env
+
+# Update the environment variables in .env
+```
+
+## Database Setup
+
+```bash
+# Run migrations
+npm run migration:run
+
+# Seed the database with initial data (optional)
+npm run seed
+```
+
+## Running the Service
+
+```bash
+# Development
+npm run start:dev
+
+# Production
+npm run build
+npm run start:prod
+```
+
+## API Documentation
+
+The service includes interactive API documentation powered by Swagger. Once the service is running, you can access the documentation at:
+
+```
+http://localhost:3000/api
+```
+
+### Available API Endpoints
+
+The Swagger UI provides detailed documentation for all available endpoints, including:
+
+- **Seasons**
+  - `GET /seasons` - List all seasons
+  - `GET /seasons/champions` - Get seasons with their champions
+
+- **Races**
+  - `GET /races` - List all races
+  - `GET /races/:year` - Get races for a specific year
+  - `POST /races/import/:year` - Import races for a year
+
+- **Drivers**
+  - `GET /drivers` - List all drivers
+  - `POST /drivers/import/:year` - Import drivers for a year
+
+- **Constructors**
+  - `GET /constructors` - List all constructor teams
+  - `POST /constructors/import/:year` - Import constructors for a year
+
+### Features of the Swagger Documentation
+
+- Interactive API testing
+- Request/response schemas
+- Authentication requirements (if any)
+- Example requests and responses
+- Model definitions
+- Query parameter descriptions
+
+## Testing
+
+```bash
+# Unit tests
+npm run test
+
+# e2e tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
@@ -37,42 +138,5 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
