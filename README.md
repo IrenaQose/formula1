@@ -77,7 +77,7 @@ On startup, the backend will:
 
 - If any request fails, the service will terminate immediately.
 
-- If any request fails with 429(too many requests), the service will retry the api call up to 5 times with an exponential delay
+- If any request fails with 429(too many requests), the service will retry the api call up to 10 times with an exponential delay
 
 - This ensures full data consistency before exposing the application.
 
