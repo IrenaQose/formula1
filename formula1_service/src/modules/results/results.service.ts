@@ -32,12 +32,6 @@ export class ResultsService {
 
   async importResults(year: number, url?: string): Promise<void> {
     try {
-      const existingResultsInDB = await this.findByYear(year.toString());
-      if (existingResultsInDB.length > 0) {
-        this.logger.log(`Results for ${year} already imported`);
-        return;
-      }
-
       const apiUrl = url || `${env.ERGAST_API_URL}/${year}/results?limit=100`;
       this.logger.log(`Fetching results from ${apiUrl}`);
 
