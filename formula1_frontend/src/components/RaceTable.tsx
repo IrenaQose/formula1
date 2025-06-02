@@ -56,7 +56,7 @@ const columns = [
 
 export const RaceTable = () => {
   const { year } = useParams();
-  const yearNumber = parseInt(year || '', 10);
+  const yearNumber = parseInt(year || '');
   const [data, setData] = useState<Race[]>([]);
   const [seasonChampion, setSeasonChampion] = useState<DriverStandings | null>(null);
   const [loading, setLoading] = useState(true);
