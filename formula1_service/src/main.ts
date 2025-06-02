@@ -42,7 +42,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   const appService = app.get(AppService);
-  await appService.importAllData();
+  await appService.importDataFromJson();
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

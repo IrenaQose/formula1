@@ -9,6 +9,8 @@ import { Driver } from '../drivers/entities/driver.entity';
 import { Season } from '../seasons/entities/season.entity';
 import { ConstructorTeam } from '../constructors/entities/constructor.entity';
 import { RetryService } from '../../utils/retry.service';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class DriverStandingsService {
@@ -30,7 +32,10 @@ export class DriverStandingsService {
     try {
       const url = `${env.ERGAST_API_URL}/${year}/driverStandings`;
 
-      const response = await this.retryService.makeRequestWithRetry<ErgastStandingsResponse>(url);
+      const response =
+        await this.retryService.makeRequestWithRetry<ErgastStandingsResponse>(
+          url,
+        );
 
       const standingsList = response.MRData.StandingsTable.StandingsLists[0];
       if (!standingsList) {
@@ -83,26 +88,55 @@ export class DriverStandingsService {
             season_id: season.id,
             constructor_team_id: constructorTeam.id,
             points: parseFloat(standingData.points),
-            position: isNaN(parseInt(standingData.position)) ? 0 : parseInt(standingData.position),
-            wins: isNaN(parseInt(standingData.wins)) ? 0 : parseInt(standingData.wins),
+            position: isNaN(parseInt(standingData.position))
+              ? 0
+              : parseInt(standingData.position),
+            wins: isNaN(parseInt(standingData.wins))
+              ? 0
+              : parseInt(standingData.wins),
           });
         } else {
           standing.points = parseFloat(standingData.points);
           standing.position = isNaN(parseInt(standingData.position))
             ? 0
             : parseInt(standingData.position);
-          standing.wins = isNaN(parseInt(standingData.wins)) ? 0 : parseInt(standingData.wins);
+          standing.wins = isNaN(parseInt(standingData.wins))
+            ? 0
+            : parseInt(standingData.wins);
           standing.constructor_team_id = constructorTeam.id;
         }
 
         await this.driverStandingRepository.save(standing);
-        this.logger.log(`Saved standings for driver ${driver.first_name} ${driver.last_name}`);
+        this.logger.log(
+          `Saved standings for driver ${driver.first_name} ${driver.last_name}`,
+        );
       }
 
       this.logger.log(`Successfully imported driver standings for ${year}`);
     } catch (error) {
       this.logger.error(`Error importing driver standings for ${year}:`, error);
       throw error;
+    }
+  }
+
+  async importDriverStandingsFromJson(): Promise<void> {
+    const jsonFile = path.join(__dirname, '../../data/driver_standings.json');
+    const jsonData = fs.readFileSync(jsonFile, 'utf8');
+    const data = JSON.parse(jsonData);
+    const driverStandings = data.driver_standings;
+
+    for (const driverStanding of driverStandings) {
+      // Check if driver standing already exists
+      const existingDriverStanding =
+        await this.driverStandingRepository.findOne({
+          where: {
+            driver_id: driverStanding.driver_id,
+            season_id: driverStanding.season_id,
+          },
+        });
+      if (!existingDriverStanding) {
+        await this.driverStandingRepository.save(driverStanding);
+      }
     }
   }
 

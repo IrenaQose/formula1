@@ -7,6 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Driver } from './entities/driver.entity';
 import { ErgastResponse } from './interfaces/driver.interface';
 import { RetryService } from '../../utils/retry.service';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class DriversService {
@@ -60,6 +62,22 @@ export class DriversService {
     } catch (error) {
       this.logger.error(`Error importing drivers for ${year}:`, error);
       throw error;
+    }
+  }
+
+  async importDriversFromJson(): Promise<void> {
+    const jsonFile = path.join(__dirname, '../../data/drivers.json');
+    const jsonData = fs.readFileSync(jsonFile, 'utf8');
+    const data = JSON.parse(jsonData);
+    const drivers = data.drivers;
+    for (const driver of drivers) {
+      // Check if driver already exists
+      const existingDriver = await this.driverRepository.findOne({
+        where: { driver_ref: driver.driver_ref },
+      });
+      if (!existingDriver) {
+        await this.driverRepository.save(driver);
+      }
     }
   }
 

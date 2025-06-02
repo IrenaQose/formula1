@@ -1,5 +1,7 @@
 import { Repository } from 'typeorm';
 import { env } from 'process';
+import * as path from 'path';
+import * as fs from 'fs';
 
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -157,6 +159,45 @@ export class ResultsService {
       page,
       limit,
     };
+  }
+
+  async importResultsFromJson(): Promise<void> {
+    try {
+      const jsonFile = path.join(__dirname, '../../data/results.json');
+      this.logger.log(`Reading results from ${jsonFile}`);
+
+      const jsonData = fs.readFileSync(jsonFile, 'utf8');
+      const data = JSON.parse(jsonData);
+      const results = data.results;
+
+      this.logger.log(`Found ${results.length} results to import`);
+
+      for (const result of results) {
+        // Check if result already exists
+        const existingResult = await this.resultRepository.findOne({
+          where: {
+            driver_id: result.driver_id,
+            race_id: result.race_id,
+          },
+        });
+
+        if (!existingResult) {
+          await this.resultRepository.save(result);
+          this.logger.log(
+            `Imported result for driver ${result.driver_id} in race ${result.race_id}`,
+          );
+        } else {
+          this.logger.log(
+            `Result already exists for driver ${result.driver_id} in race ${result.race_id}`,
+          );
+        }
+      }
+
+      this.logger.log('Successfully imported results from JSON');
+    } catch (error) {
+      this.logger.error('Error importing results from JSON:', error);
+      throw error;
+    }
   }
 
   async findByYear(year: string): Promise<Result[]> {

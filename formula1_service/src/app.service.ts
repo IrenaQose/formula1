@@ -81,6 +81,21 @@ export class AppService {
     }
   }
 
+  async importDataFromJson(): Promise<void> {
+    try {
+      await this.constructorsService.importConstructorsFromJson();
+      await this.driversService.importDriversFromJson();
+      await this.racesService.importRacesFromJson();
+      await this.resultsService.importResultsFromJson();
+      await this.driverStandingsService.importDriverStandingsFromJson();
+
+      this.logger.log('Successfully imported data from JSON');
+    } catch (error) {
+      this.logger.error('Error importing data from JSON:', error);
+      throw error;
+    }
+  }
+
   async hasDriverStandingsPerYear(year: number): Promise<boolean> {
     const driverStandingRepository =
       await this.driverStandingsService.findByYear(year);

@@ -1,5 +1,7 @@
 import { env } from 'process';
 import { Repository } from 'typeorm';
+import * as path from 'path';
+import * as fs from 'fs';
 
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -70,6 +72,41 @@ export class RacesService {
       this.logger.log(`Successfully imported races for ${year}`);
     } catch (error) {
       this.logger.error(`Error importing races for ${year}:`, error);
+      throw error;
+    }
+  }
+
+  async importRacesFromJson(): Promise<void> {
+    try {
+      const jsonFile = path.join(__dirname, '../../data/races.json');
+      this.logger.log(`Reading races from ${jsonFile}`);
+
+      const jsonData = fs.readFileSync(jsonFile, 'utf8');
+      const data = JSON.parse(jsonData);
+      const races = data.races;
+
+      this.logger.log(`Found ${races.length} races to import`);
+
+      for (const race of races) {
+        // Check if race already exists
+        const existingRace = await this.raceRepository.findOne({
+          where: {
+            name: race.name,
+            season_id: race.season_id,
+          },
+        });
+
+        if (!existingRace) {
+          await this.raceRepository.save(race);
+          this.logger.log(`Imported race: ${race.name}`);
+        } else {
+          this.logger.log(`Race already exists: ${race.name}`);
+        }
+      }
+
+      this.logger.log('Successfully imported races from JSON');
+    } catch (error) {
+      this.logger.error('Error importing races from JSON:', error);
       throw error;
     }
   }
