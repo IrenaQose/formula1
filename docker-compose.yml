@@ -29,6 +29,7 @@ services:
       - DB_USERNAME=f1
       - DB_PASSWORD=f1
       - DB_DATABASE=f1
+      - ERGAST_API_URL=https://api.jolpi.ca/ergast/f1
     ports:
       - "3000:3000"
     depends_on:

@@ -169,10 +169,16 @@ describe('ResultsService', () => {
     }).compile();
 
     service = module.get<ResultsService>(ResultsService);
-    resultRepository = module.get<Repository<Result>>(getRepositoryToken(Result));
-    seasonRepository = module.get<Repository<Season>>(getRepositoryToken(Season));
+    resultRepository = module.get<Repository<Result>>(
+      getRepositoryToken(Result),
+    );
+    seasonRepository = module.get<Repository<Season>>(
+      getRepositoryToken(Season),
+    );
     raceRepository = module.get<Repository<Race>>(getRepositoryToken(Race));
-    driverRepository = module.get<Repository<Driver>>(getRepositoryToken(Driver));
+    driverRepository = module.get<Repository<Driver>>(
+      getRepositoryToken(Driver),
+    );
     constructorRepository = module.get<Repository<ConstructorTeam>>(
       getRepositoryToken(ConstructorTeam),
     );
@@ -180,7 +186,7 @@ describe('ResultsService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   it('should be defined', () => {
@@ -196,7 +202,9 @@ describe('ResultsService', () => {
         limit: 30,
       };
 
-      jest.spyOn(resultRepository, 'findAndCount').mockResolvedValue([[mockResult], 1]);
+      jest
+        .spyOn(resultRepository, 'findAndCount')
+        .mockResolvedValue([[mockResult], 1]);
 
       const result = await service.findAll();
       expect(result).toEqual(expected);
@@ -220,7 +228,9 @@ describe('ResultsService', () => {
         limit: 10,
       };
 
-      jest.spyOn(resultRepository, 'findAndCount').mockResolvedValue([[mockResult], 1]);
+      jest
+        .spyOn(resultRepository, 'findAndCount')
+        .mockResolvedValue([[mockResult], 1]);
 
       const result = await service.findAll(2, 10);
       expect(result).toEqual(expected);
@@ -287,7 +297,9 @@ describe('ResultsService', () => {
       jest.spyOn(seasonRepository, 'findOne').mockResolvedValue(mockSeason);
       jest.spyOn(raceRepository, 'findOne').mockResolvedValue(mockRace);
       jest.spyOn(driverRepository, 'findOne').mockResolvedValue(mockDriver);
-      jest.spyOn(constructorRepository, 'findOne').mockResolvedValue(mockConstructor);
+      jest
+        .spyOn(constructorRepository, 'findOne')
+        .mockResolvedValue(mockConstructor);
       jest.spyOn(resultRepository, 'findOne').mockResolvedValue(null);
       jest.spyOn(resultRepository, 'create').mockReturnValue(mockResult);
       jest.spyOn(resultRepository, 'save').mockResolvedValue(mockResult);
@@ -295,7 +307,9 @@ describe('ResultsService', () => {
 
       await service.importResults(2024);
 
-      expect(seasonRepository.findOne).toHaveBeenCalledWith({ where: { year: '2024' } });
+      expect(seasonRepository.findOne).toHaveBeenCalledWith({
+        where: { year: '2024' },
+      });
       expect(raceRepository.findOne).toHaveBeenCalledWith({
         where: {
           name: 'Australian Grand Prix',
@@ -323,7 +337,9 @@ describe('ResultsService', () => {
       jest.spyOn(seasonRepository, 'findOne').mockResolvedValue(null);
       jest.spyOn(httpService, 'get').mockReturnValue(of(mockAxiosResponse));
 
-      await expect(service.importResults(2024)).rejects.toThrow('Season 2024 not found');
+      await expect(service.importResults(2024)).rejects.toThrow(
+        'Season 2024 not found',
+      );
     });
 
     it('should throw error if race not found', async () => {
@@ -344,7 +360,9 @@ describe('ResultsService', () => {
       jest.spyOn(driverRepository, 'findOne').mockResolvedValue(null);
       jest.spyOn(httpService, 'get').mockReturnValue(of(mockAxiosResponse));
 
-      await expect(service.importResults(2024)).rejects.toThrow('Driver null not found');
+      await expect(service.importResults(2024)).rejects.toThrow(
+        'Driver null not found',
+      );
     });
 
     it('should throw error if constructor not found', async () => {
@@ -355,12 +373,16 @@ describe('ResultsService', () => {
       jest.spyOn(constructorRepository, 'findOne').mockResolvedValue(null);
       jest.spyOn(httpService, 'get').mockReturnValue(of(mockAxiosResponse));
 
-      await expect(service.importResults(2024)).rejects.toThrow('Constructor null not found');
+      await expect(service.importResults(2024)).rejects.toThrow(
+        'Constructor null not found',
+      );
     });
 
     it('should handle API errors', async () => {
       jest.spyOn(service, 'findByYear').mockResolvedValue([]);
-      jest.spyOn(httpService, 'get').mockReturnValue(throwError(() => new Error('API Error')));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(throwError(() => new Error('API Error')));
 
       await expect(service.importResults(2024)).rejects.toThrow('API Error');
     });
@@ -370,7 +392,9 @@ describe('ResultsService', () => {
       jest.spyOn(seasonRepository, 'findOne').mockResolvedValue(mockSeason);
       jest.spyOn(raceRepository, 'findOne').mockResolvedValue(mockRace);
       jest.spyOn(driverRepository, 'findOne').mockResolvedValue(mockDriver);
-      jest.spyOn(constructorRepository, 'findOne').mockResolvedValue(mockConstructor);
+      jest
+        .spyOn(constructorRepository, 'findOne')
+        .mockResolvedValue(mockConstructor);
       jest.spyOn(resultRepository, 'findOne').mockResolvedValue(mockResult);
       jest.spyOn(httpService, 'get').mockReturnValue(of(mockAxiosResponse));
 
