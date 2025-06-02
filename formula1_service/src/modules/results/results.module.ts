@@ -13,7 +13,10 @@ import { ConstructorTeam } from '../constructors/entities/constructor.entity';
 import { RetryService } from '../../utils/retry.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Result, Season, Race, Driver, ConstructorTeam]), HttpModule],
+  imports: [
+    TypeOrmModule.forFeature([Result, Season, Race, Driver, ConstructorTeam]),
+    HttpModule,
+  ],
   controllers: [ResultsController],
   providers: [ResultsService, RetryService],
   exports: [ResultsService],

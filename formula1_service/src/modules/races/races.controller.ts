@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, ParseIntPipe } from '@nestjs/common';
 
 import { RacesService } from './races.service';
-import { Race } from './entities/race.entity';
 import { RacesResponse } from './interfaces/races.interface';
 
 @Controller('races')
@@ -14,7 +13,9 @@ export class RacesController {
   }
 
   @Get(':year')
-  async findByYear(@Param('year', ParseIntPipe) year: number): Promise<{ data: RacesResponse }> {
+  async findByYear(
+    @Param('year', ParseIntPipe) year: number,
+  ): Promise<{ data: RacesResponse }> {
     return this.racesService.findByYear(year);
   }
 

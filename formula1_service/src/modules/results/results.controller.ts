@@ -9,8 +9,6 @@ import {
 } from '@nestjs/common';
 
 import { ResultsService } from './results.service';
-import { Result } from './entities/result.entity';
-
 import { YearValidationPipe } from '../../common/validation';
 
 @Controller('results')

@@ -14,7 +14,13 @@ import { RetryService } from '../../utils/retry.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([DriverStanding, Driver, Race, Season, ConstructorTeam]),
+    TypeOrmModule.forFeature([
+      DriverStanding,
+      Driver,
+      Race,
+      Season,
+      ConstructorTeam,
+    ]),
     HttpModule,
   ],
   controllers: [DriverStandingsController],

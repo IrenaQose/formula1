@@ -35,7 +35,10 @@ export class ResultsService {
       const apiUrl = url || `${env.ERGAST_API_URL}/${year}/results?limit=100`;
       this.logger.log(`Fetching results from ${apiUrl}`);
 
-      const response = await this.retryService.makeRequestWithRetry<ErgastResultsResponse>(apiUrl);
+      const response =
+        await this.retryService.makeRequestWithRetry<ErgastResultsResponse>(
+          apiUrl,
+        );
 
       const limit = parseInt(response.MRData.limit);
       const total = parseInt(response.MRData.total);
@@ -47,7 +50,9 @@ export class ResultsService {
       this.logger.log(`Found ${races.length} races for ${year}`);
 
       // Find season
-      let season = await this.seasonRepository.findOne({ where: { year: year.toString() } });
+      const season = await this.seasonRepository.findOne({
+        where: { year: year.toString() },
+      });
 
       if (!season) {
         throw new Error(`Season ${year} not found`);
@@ -55,7 +60,7 @@ export class ResultsService {
 
       for (const raceData of races) {
         // Find race
-        let race = await this.raceRepository.findOne({
+        const race = await this.raceRepository.findOne({
           where: {
             name: raceData.raceName,
             season_id: season.id,
@@ -69,7 +74,7 @@ export class ResultsService {
         for (const resultData of raceData.Results) {
           // Find driver
           const driverRef = resultData.Driver.driverId;
-          let driver = await this.driverRepository.findOne({
+          const driver = await this.driverRepository.findOne({
             where: { driver_ref: driverRef },
           });
 
@@ -79,7 +84,7 @@ export class ResultsService {
 
           // Find constructor
           const constructorRef = resultData.Constructor.constructorId;
-          let constructor = await this.constructorRepository.findOne({
+          const constructor = await this.constructorRepository.findOne({
             where: { constructor_ref: constructorRef },
           });
 
@@ -98,7 +103,9 @@ export class ResultsService {
           if (!existingResult && resultData.position === '1') {
             const result = this.resultRepository.create({
               points: parseFloat(resultData.points),
-              position: resultData.position ? parseInt(resultData.position) : null,
+              position: resultData.position
+                ? parseInt(resultData.position)
+                : null,
               grid: parseInt(resultData.grid),
               laps: parseInt(resultData.laps),
               status: resultData.status,

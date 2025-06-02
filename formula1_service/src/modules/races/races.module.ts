@@ -7,12 +7,14 @@ import { RacesService } from './races.service';
 import { RacesController } from './races.controller';
 import { DriverStandingsModule } from '../driver-standings/driver-standings.module';
 import { RetryService } from '../../utils/retry.service';
+import { ResultsModule } from '../results/results.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Race, Season]),
     HttpModule,
     DriverStandingsModule,
+    ResultsModule,
   ],
   controllers: [RacesController],
   providers: [RacesService, RetryService],
