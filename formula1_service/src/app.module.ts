@@ -16,11 +16,20 @@ import { DriverStanding } from './modules/driver-standings/entities/driver-stand
 import { Driver } from './modules/drivers/entities/driver.entity';
 import { Race } from './modules/races/entities/race.entity';
 import { Result } from './modules/results/entities/result.entity';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60, // time to live in seconds
+          limit: 10, // number of requests per ttl per IP
+        },
+      ],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
