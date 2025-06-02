@@ -95,7 +95,7 @@ On startup, the backend will:
 
 ```
 
-> ⚠️ **Be patient, please:** The first time when running docker it will take around 5 - 6 min. Keep an eye on the logs of the service if the api call to ergast has failed most probably due to too many requests.
+> ⚠️ **Be patient, please:** The first time when running docker it will take around 10 - 15 min. Keep an eye on the logs of the service if the api call to ergast has failed most probably due to too many requests.
 > If so, run it again
 
 

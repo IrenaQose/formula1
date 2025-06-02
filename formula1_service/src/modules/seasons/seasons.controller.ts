@@ -4,7 +4,7 @@ import { Season } from './entities/season.entity';
 import { SeasonsResponse } from './interfaces/season.interface';
 import { YearRangeValidationPipe, YearRange } from '../../common/validation';
 
-@Controller('seasons')
+@Controller({ path: 'seasons', version: '1' })
 export class SeasonsController {
   constructor(private readonly seasonsService: SeasonsService) {}
 

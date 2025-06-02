@@ -11,7 +11,7 @@ import {
 import { ResultsService } from './results.service';
 import { YearValidationPipe } from '../../common/validation';
 
-@Controller('results')
+@Controller({ path: 'results', version: '1' })
 export class ResultsController {
   constructor(private readonly resultsService: ResultsService) {}
 

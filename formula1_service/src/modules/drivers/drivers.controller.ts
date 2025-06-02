@@ -1,7 +1,14 @@
-import { Controller, Get, Post, Param, ParseIntPipe, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  ParseIntPipe,
+  BadRequestException,
+} from '@nestjs/common';
 import { DriversService } from './drivers.service';
 
-@Controller('drivers')
+@Controller({ path: 'drivers', version: '1' })
 export class DriversController {
   constructor(private readonly driversService: DriversService) {}
 
@@ -16,7 +23,8 @@ export class DriversController {
       'year',
       new ParseIntPipe({
         errorHttpStatusCode: 400,
-        exceptionFactory: () => new BadRequestException('Year must be a valid number'),
+        exceptionFactory: () =>
+          new BadRequestException('Year must be a valid number'),
       }),
     )
     year: number,

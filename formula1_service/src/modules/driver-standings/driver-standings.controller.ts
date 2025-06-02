@@ -1,9 +1,17 @@
-import { Controller, Post, Param, ParseIntPipe, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Param,
+  ParseIntPipe,
+  BadRequestException,
+} from '@nestjs/common';
 import { DriverStandingsService } from './driver-standings.service';
 
-@Controller('driver-standings')
+@Controller({ path: 'driver-standings', version: '1' })
 export class DriverStandingsController {
-  constructor(private readonly driverStandingsService: DriverStandingsService) {}
+  constructor(
+    private readonly driverStandingsService: DriverStandingsService,
+  ) {}
 
   @Post('import/:year')
   async importDriverStandings(
@@ -11,7 +19,8 @@ export class DriverStandingsController {
       'year',
       new ParseIntPipe({
         errorHttpStatusCode: 400,
-        exceptionFactory: () => new BadRequestException('Year must be a valid number'),
+        exceptionFactory: () =>
+          new BadRequestException('Year must be a valid number'),
       }),
     )
     year: number,

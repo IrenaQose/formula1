@@ -1,23 +1,27 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { Logger, VersioningType } from '@nestjs/common';
 import { AppService } from './app.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
-  // Enable CORS for development
-  if (process.env.NODE_ENV !== 'production') {
-    app.enableCors({
-      origin: true, // Allow all origins in development
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      credentials: true,
-      allowedHeaders: 'Content-Type, Accept, Authorization',
-    });
-  } else {
-    logger.log('Running in production mode - CORS disabled');
-  }
+  // Enable CORS for both development and production
+  const allowedOrigins =
+    process.env.NODE_ENV === 'production' ? [process.env.FRONTEND_URL] : true;
+
+  app.enableCors({
+    origin: allowedOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true, // This allows credentials to be sent with requests
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+  });
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
 
   const appService = app.get(AppService);
   await appService.importAllData();

@@ -11,7 +11,7 @@ import {
 import { ConstructorsService } from './constructors.service';
 import { ConstructorTeam } from './entities/constructor.entity';
 
-@Controller('constructors')
+@Controller({ path: 'constructors', version: '1' })
 export class ConstructorsController {
   private readonly logger = new Logger(ConstructorsController.name);
 
@@ -28,7 +28,8 @@ export class ConstructorsController {
       'year',
       new ParseIntPipe({
         errorHttpStatusCode: 400,
-        exceptionFactory: () => new BadRequestException('Year must be a valid number'),
+        exceptionFactory: () =>
+          new BadRequestException('Year must be a valid number'),
       }),
     )
     year: number,

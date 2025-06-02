@@ -3,7 +3,7 @@ import { Controller, Get, Post, Param, ParseIntPipe } from '@nestjs/common';
 import { RacesService } from './races.service';
 import { RacesResponse } from './interfaces/races.interface';
 
-@Controller('races')
+@Controller({ path: 'races', version: '1' })
 export class RacesController {
   constructor(private readonly racesService: RacesService) {}
 
