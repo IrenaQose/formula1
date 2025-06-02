@@ -10,6 +10,7 @@ import { RacesResponse, RaceResponse } from './interfaces/races.interface';
 import { Season } from '../seasons/entities/season.entity';
 import { DriverStandingsService } from '../driver-standings/driver-standings.service';
 import { RetryService } from '../../utils/retry.service';
+import { ResultsService } from '../results/results.service';
 
 @Injectable()
 export class RacesService {
@@ -22,17 +23,12 @@ export class RacesService {
     private readonly seasonRepository: Repository<Season>,
     private readonly retryService: RetryService,
     private readonly driverStandingsService: DriverStandingsService,
+    private readonly resultsService: ResultsService,
   ) {}
 
   async importRaces(year: number): Promise<void> {
     try {
-      const existingRacesInDB = await this.findByYear(year);
-      if (existingRacesInDB.data.races.length > 0) {
-        this.logger.log(`Races for ${year} already imported`);
-        return;
-      }
-
-      const url = `${env.ERGAST_API_URL}/${year}/races`;
+      const url = `${env.ERGAST_API_URL}/${year}/races?limit=100`;
       const response =
         await this.retryService.makeRequestWithRetry<ErgastRaceResponse>(url);
 
@@ -90,6 +86,10 @@ export class RacesService {
   }
 
   async findByYear(year: number): Promise<{ data: RacesResponse }> {
+    const isCurrentYear = this.checkIfIsCurrentYear(year);
+    if (isCurrentYear) {
+      await this.resultsService.importResults(year);
+    }
     const races = await this.raceRepository.find({
       where: {
         season: { year: year.toString() },
@@ -139,5 +139,11 @@ export class RacesService {
         champion: seasonChampion,
       },
     };
+  }
+
+  checkIfIsCurrentYear(year: number): boolean {
+    const thisYear = new Date().getFullYear();
+
+    return thisYear === year;
   }
 }
