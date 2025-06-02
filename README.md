@@ -29,6 +29,7 @@
 ```
 
 ### Components
+This repository contains a Formula 1 application with three main components:
 
 - **Frontend (FE)**: Web interface for interacting with F1 data.
 - **Backend (BE)**: Handles logic to:
@@ -37,11 +38,6 @@
     - Store missing data
     - Stop service on any failure
 - **Database (DB)**: PostgreSQL instance for storing F1-related data.
-
-This repository contains a Formula 1 application with three main components:
-- PostgreSQL Database
-- Backend Service
-- Frontend Application
 
 ## 🚀 Setup instructions
 
@@ -99,7 +95,7 @@ On startup, the backend will:
 
 ```
 
-> ⚠️ **Warning:** The first time when running docker it will take around 5 -6 min. Keep an eye on the logs of the service if the api call to ergast has failed most probably due to too many requests.
+> ⚠️ **Be patient, please:** The first time when running docker it will take around 5 - 6 min. Keep an eye on the logs of the service if the api call to ergast has failed most probably due to too many requests.
 > If so, run it again
 
 
