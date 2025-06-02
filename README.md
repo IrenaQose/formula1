@@ -79,17 +79,24 @@ http://localhost:3000/api
 ⚙️ Backend Behavior
 On startup, the backend will:
 
-- Attempt to fetch data from a list of required Ergast API endpoints.
+- Run migration scripts to create tables and insert seasons from year 2005 until 2025.
+
+- Read the data from json files (drivers, driver-standings, results, races, constructors), this way the initial data is loaded quicker
 
 - Check if data already exists in the database.
 
 - If not found, insert into the DB.
 
-- If any request fails, the service will terminate immediately.
-
-- If any request fails with 429(too many requests), the service will retry the api call up to 10 times with an exponential delay
-
 - This ensures full data consistency before exposing the application.
+
+⚙️ Frontend Behavior
+- On FE we will show a list of all the seasons from 2005 -current year
+
+- On click of one season we will fetch the results of that season
+
+- For the current year consistency with the recent races, the BE will fetch for us the current results from the Ergast api
+
+- To improve: Once the current year results are fetched save on localstorage and next time we display those data in case ergast api takes long 
 
 📁 Directory Structure
 
@@ -103,9 +110,6 @@ On startup, the backend will:
 ├── docker-compose.yml
 └── README.md
 
-```
 
-> ⚠️ **Be patient, please:** The first time when running docker it will take around 10 - 15 min. Keep an eye on the logs of the service if the api call to ergast has failed most probably due to too many requests.
-> If so, run it again
 
 
