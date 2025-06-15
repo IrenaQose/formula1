@@ -69,7 +69,7 @@ export class CreateInitialTables1716124563000 implements MigrationInterface {
                 "points" double precision NOT NULL,
                 "position" integer,
                 "grid" integer,
-                "laps" integer NOT NULL,
+                "laps" integer,
                 "status" character varying NOT NULL,
                 "time" varchar(20),
                 "season_id" integer NOT NULL,
