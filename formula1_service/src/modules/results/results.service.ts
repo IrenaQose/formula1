@@ -108,8 +108,8 @@ export class ResultsService {
               position: resultData.position
                 ? parseInt(resultData.position)
                 : null,
-              grid: parseInt(resultData.grid),
-              laps: parseInt(resultData.laps),
+              grid: parseInt(resultData.grid) || null,
+              laps: parseInt(resultData.laps) || null,
               status: resultData.status,
               time: resultData.Time?.time || null,
               season_id: season.id,
