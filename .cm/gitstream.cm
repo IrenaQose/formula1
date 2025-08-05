@@ -1,5 +1,8 @@
 # .cm/gitstream.cm
-name: label_by_directory
+
+---
+
+name: label_backend_files
 
 on: pull_request
 
@@ -9,7 +12,13 @@ if:
 then:
   - prs.add_label("backend")
 
-else_if:
+---
+
+name: label_frontend_files
+
+on: pull_request
+
+if:
   - files.match_any("frontend/**")
 
 then:
