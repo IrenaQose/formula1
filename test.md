@@ -1,0 +1,1 @@
+Will the github action setup for all my repos work?
