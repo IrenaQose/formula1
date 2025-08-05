@@ -9,4 +9,4 @@ jobs:
   gitstream:
     runs-on: ubuntu-latest
     steps:
-      - uses: gitstream-io/gitstream-action@latest 
+      - uses: linear-b/gitstream-github-action@latest
