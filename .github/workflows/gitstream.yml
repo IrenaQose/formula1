@@ -8,5 +8,7 @@ on:
 jobs:
   gitstream:
     runs-on: ubuntu-latest
+    name: gitStream workflow automation
     steps:
-      - uses: linear-b/gitstream-github-action@latest
+      - uses: linear-b/gitstream-github-action@v2
+        id: rules-engine
