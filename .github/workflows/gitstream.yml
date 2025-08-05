@@ -1,0 +1,12 @@
+# .github/workflows/gitstream.yml
+name: gitStream
+
+on:
+  pull_request:
+    types: [opened, edited, labeled, unlabeled, synchronize]
+
+jobs:
+  gitstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: gitstream-io/gitstream-action@v0.6.4 # Or latest available
