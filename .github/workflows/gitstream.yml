@@ -34,7 +34,7 @@ jobs:
   gitStream:
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    name: gitStream workflow automation
+    name: gitStream workflow automation repo level
     steps:
       - name: Adding PR Url
         run: |
