@@ -2,7 +2,7 @@
 
 name: gitStream workflow automation repo level
 run-name: |
-  /:\ gitStream: PR #${{ github.event.pull_request.number || fromJSON(fromJSON(github.event.inputs.client_payload)).pullRequestNumber }} from ${{ github.event.pull_request.head.repo.full_name || github.event.inputs.full_repository }}
+  /:\ gitStream: PR #${{ fromJSON(fromJSON(github.event.inputs.client_payload)).pullRequestNumber }} from ${{ github.event.inputs.full_repository }}
 
 on:
   workflow_dispatch:
