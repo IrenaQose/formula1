@@ -6,6 +6,7 @@ export const fetchRaces = async (year: number): Promise<RaceResponse> => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+    //Todo: handle error cases
     const data = await response.json();
     return data;
   } catch (error) {
