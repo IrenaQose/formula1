@@ -1,5 +1,3 @@
-
-# -*- mode: yaml -*-
 manifest:
   version: 1.0
 automations:
@@ -10,12 +8,8 @@ automations:
     run:
       - action: add-label@v1
         args:
-            label: "📓JSDoc Only"
-            color: {{ colors.green }}
-      - action: add-reviewers@v1
-        args:
-          reviewers: [fourth-organization/tech-writers]
-      - action: approve@v1
+            label: "JSDoc Only"
+            color: {{ colors.purple }}
       
 colors:
-  green: '0e8a16'
+  purple: '800080'
