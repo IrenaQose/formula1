@@ -2,7 +2,7 @@
 
 name: gitStream workflow automation repo level
 run-name: |
-  /:\ gitStream: PR #${{ fromJSON(fromJSON(github.event.inputs.client_payload)).pullRequestNumber }} from ${{ github.event.inputs.full_repository }}
+  /:\ gitStream: PR #${{ github.event.pull_request.number || fromJSON(fromJSON(github.event.inputs.client_payload)).pullRequestNumber }} from ${{ github.event.pull_request.head.repo.full_name || github.event.inputs.full_repository }}
 
 on:
   workflow_dispatch:
@@ -30,6 +30,9 @@ on:
         required: false
         default: ''
 
+  pull_request:
+    types: [opened, synchronize, reopened]
+
 jobs:
   gitStream:
     timeout-minutes: 15
@@ -38,16 +41,20 @@ jobs:
     steps:
       - name: Adding PR Url
         run: |
-          echo '[${{ fromJSON(fromJSON(inputs.client_payload)).repo }}#${{ fromJSON(fromJSON(inputs.client_payload)).prContext.number }}](${{ fromJSON(fromJSON(inputs.client_payload)).prContext.url }}) - `${{ fromJSON(fromJSON(inputs.client_payload)).branch }}` by ${{ fromJSON(fromJSON(inputs.client_payload)).prContext.author }}' >> $GITHUB_STEP_SUMMARY
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "[${{ github.repository }}#${{ github.event.pull_request.number }}](${{ github.event.pull_request.html_url }}) - \`${{ github.head_ref }}\` by ${{ github.event.pull_request.user.login }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "[${{ fromJSON(fromJSON(inputs.client_payload)).repo }}#${{ fromJSON(fromJSON(inputs.client_payload)).prContext.number }}](${{ fromJSON(fromJSON(inputs.client_payload)).prContext.url }}) - \`${{ fromJSON(fromJSON(inputs.client_payload)).branch }}` by ${{ fromJSON(fromJSON(inputs.client_payload)).prContext.author }}" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Evaluate Rules
         uses: linear-b/gitstream-github-action@v2
         id: rules-engine
         with:
-          full_repository: ${{ github.event.inputs.full_repository }}
-          head_ref: ${{ github.event.inputs.head_ref }}
-          base_ref: ${{ github.event.inputs.base_ref }}
-          client_payload: ${{ github.event.inputs.client_payload }}
-          installation_id: ${{ github.event.inputs.installation_id }}
-          resolver_url: ${{ github.event.inputs.resolver_url }}
-          resolver_token: ${{ github.event.inputs.resolver_token }}
+          full_repository: ${{ github.event.pull_request.head.repo.full_name || github.event.inputs.full_repository }}
+          head_ref: ${{ github.head_ref || github.event.inputs.head_ref }}
+          base_ref: ${{ github.base_ref || github.event.inputs.base_ref }}
+          client_payload: ${{ github.event.inputs.client_payload || '' }}
+          installation_id: ${{ github.event.inputs.installation_id || '' }}
+          resolver_url: ${{ github.event.inputs.resolver_url || '' }}
+          resolver_token: ${{ github.event.inputs.resolver_token || '' }}
